@@ -1,7 +1,12 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { evaluate, parsePatterns, approvedByWriter, isWorkflowPermissionError } = require('./automerge.cjs');
+const {
+  evaluate,
+  parsePatterns,
+  approvedByWriter,
+  isWorkflowPermissionError,
+} = require('./automerge.cjs');
 
 const SHA = 'a'.repeat(40);
 const patterns = parsePatterns(`
@@ -14,19 +19,36 @@ package.json
 
 function pr(over = {}) {
   return {
-    number: 7, state: 'open', draft: false, labels: [], mergeable: true,
-    mergeable_state: 'clean', head: { sha: SHA }, ...over,
+    number: 7,
+    state: 'open',
+    draft: false,
+    labels: [],
+    mergeable: true,
+    mergeable_state: 'clean',
+    head: { sha: SHA },
+    ...over,
   };
 }
 const ci = (status = 'completed', conclusion = 'success') => [
   { status, conclusion, created_at: '2026-10-16T10:00:00Z' },
 ];
-const checks = (...xs) => xs.map(([name, status = 'completed', conclusion = 'success', id = 1]) => ({ name, status, conclusion, id }));
+const checks = (...xs) =>
+  xs.map(([name, status = 'completed', conclusion = 'success', id = 1]) => ({
+    name,
+    status,
+    conclusion,
+    id,
+  }));
 
 function base(over = {}) {
   return {
-    pr: pr(), ciRuns: ci(), checkRuns: checks(['lint'], ['test']),
-    files: ['src/app.ts'], reviews: [], writers: new Set(), patterns,
+    pr: pr(),
+    ciRuns: ci(),
+    checkRuns: checks(['lint'], ['test']),
+    files: ['src/app.ts'],
+    reviews: [],
+    writers: new Set(),
+    patterns,
     author: { login: 'dev', isWriter: false, isBot: false },
     linkedIssues: [{ number: 12, state: 'OPEN', assignees: ['dev'] }],
     security: { state: 'success' },
@@ -35,77 +57,174 @@ function base(over = {}) {
 }
 
 test('merges when every check passed and nothing sensitive changed', () => {
-  assert.deepEqual(evaluate(base()), { action: 'merge', reason: 'checks-passed' });
+  assert.deepEqual(evaluate(base()), {
+    action: 'merge',
+    reason: 'checks-passed',
+  });
 });
 
 test('skips drafts, closed pull requests and do-not-merge', () => {
   assert.equal(evaluate(base({ pr: pr({ draft: true }) })).reason, 'draft');
-  assert.equal(evaluate(base({ pr: pr({ state: 'closed' }) })).reason, 'not-open');
-  assert.equal(evaluate(base({ pr: pr({ labels: [{ name: 'do-not-merge' }] }) })).reason, 'do-not-merge');
+  assert.equal(
+    evaluate(base({ pr: pr({ state: 'closed' }) })).reason,
+    'not-open',
+  );
+  assert.equal(
+    evaluate(base({ pr: pr({ labels: [{ name: 'do-not-merge' }] }) })).reason,
+    'do-not-merge',
+  );
 });
 
 test('waits until CI has run on this commit and finished', () => {
   assert.equal(evaluate(base({ ciRuns: [] })).reason, 'ci-not-started');
-  assert.equal(evaluate(base({ ciRuns: ci('in_progress', null) })).reason, 'ci-running');
+  assert.equal(
+    evaluate(base({ ciRuns: ci('in_progress', null) })).reason,
+    'ci-running',
+  );
 });
 
 test('reports CI that is waiting for a maintainer to approve the run', () => {
-  assert.deepEqual(evaluate(base({ ciRuns: ci('completed', 'action_required') })),
-    { action: 'skip', reason: 'ci-awaiting-approval' });
+  assert.deepEqual(
+    evaluate(base({ ciRuns: ci('completed', 'action_required') })),
+    { action: 'skip', reason: 'ci-awaiting-approval' },
+  );
 });
 
 test('recognises the workflow-permission merge rejection', () => {
-  assert.ok(isWorkflowPermissionError({ status: 403, message: 'Resource not accessible by integration' }));
-  assert.ok(!isWorkflowPermissionError({ status: 405, message: 'Head branch was modified' }));
-  assert.ok(!isWorkflowPermissionError({ status: 403, message: 'Must have admin rights' }));
+  assert.ok(
+    isWorkflowPermissionError({
+      status: 403,
+      message: 'Resource not accessible by integration',
+    }),
+  );
+  assert.ok(
+    !isWorkflowPermissionError({
+      status: 405,
+      message: 'Head branch was modified',
+    }),
+  );
+  assert.ok(
+    !isWorkflowPermissionError({
+      status: 403,
+      message: 'Must have admin rights',
+    }),
+  );
 });
 
 test('never merges a failed CI run, and uses the latest run', () => {
-  assert.equal(evaluate(base({ ciRuns: ci('completed', 'failure') })).action, 'skip');
+  assert.equal(
+    evaluate(base({ ciRuns: ci('completed', 'failure') })).action,
+    'skip',
+  );
   const rerun = [
-    { status: 'completed', conclusion: 'failure', created_at: '2026-10-16T09:00:00Z' },
-    { status: 'completed', conclusion: 'success', created_at: '2026-10-16T10:00:00Z' },
+    {
+      status: 'completed',
+      conclusion: 'failure',
+      created_at: '2026-10-16T09:00:00Z',
+    },
+    {
+      status: 'completed',
+      conclusion: 'success',
+      created_at: '2026-10-16T10:00:00Z',
+    },
   ];
   assert.equal(evaluate(base({ ciRuns: rerun })).action, 'merge');
 });
 
 test('every Actions check must pass, ignoring the bot itself', () => {
-  assert.equal(evaluate(base({ checkRuns: checks(['lint', 'in_progress', null]) })).reason, 'checks-running');
-  const failed = evaluate(base({ checkRuns: checks(['lint'], ['test', 'completed', 'failure']) }));
+  assert.equal(
+    evaluate(base({ checkRuns: checks(['lint', 'in_progress', null]) })).reason,
+    'checks-running',
+  );
+  const failed = evaluate(
+    base({ checkRuns: checks(['lint'], ['test', 'completed', 'failure']) }),
+  );
   assert.deepEqual([failed.action, failed.detail], ['skip', ['test']]);
-  assert.equal(evaluate(base({ checkRuns: checks(['test'], ['auto-merge', 'in_progress', null]) })).action, 'merge');
-  assert.equal(evaluate(base({ checkRuns: checks(['docs', 'completed', 'skipped']) })).action, 'merge');
+  assert.equal(
+    evaluate(
+      base({
+        checkRuns: checks(['test'], ['auto-merge', 'in_progress', null]),
+      }),
+    ).action,
+    'merge',
+  );
+  assert.equal(
+    evaluate(base({ checkRuns: checks(['docs', 'completed', 'skipped']) }))
+      .action,
+    'merge',
+  );
 });
 
 test('asks the author to resolve conflicts or update the branch', () => {
-  assert.equal(evaluate(base({ pr: pr({ mergeable: false, mergeable_state: 'dirty' }) })).reason, 'conflicts');
-  assert.equal(evaluate(base({ pr: pr({ mergeable_state: 'behind' }) })).reason, 'behind');
+  assert.equal(
+    evaluate(base({ pr: pr({ mergeable: false, mergeable_state: 'dirty' }) }))
+      .reason,
+    'conflicts',
+  );
+  assert.equal(
+    evaluate(base({ pr: pr({ mergeable_state: 'behind' }) })).reason,
+    'behind',
+  );
   assert.equal(evaluate(base({ pr: pr({ mergeable: null }) })).action, 'wait');
 });
 
 test('sensitive files need a writer approval on the current commit', () => {
-  const files = ['src/app.ts', '.github/workflows/ci.yml', 'contracts/voucher/Cargo.toml'];
+  const files = [
+    'src/app.ts',
+    '.github/workflows/ci.yml',
+    'contracts/voucher/Cargo.toml',
+  ];
   const blocked = evaluate(base({ files }));
-  assert.deepEqual([blocked.action, blocked.reason, blocked.detail],
-    ['comment', 'needs-approval', ['.github/workflows/ci.yml', 'contracts/voucher/Cargo.toml']]);
+  assert.deepEqual(
+    [blocked.action, blocked.reason, blocked.detail],
+    [
+      'comment',
+      'needs-approval',
+      ['.github/workflows/ci.yml', 'contracts/voucher/Cargo.toml'],
+    ],
+  );
 
-  const approval = [{ user: { login: 'maint' }, state: 'APPROVED', commit_id: SHA }];
-  assert.equal(evaluate(base({ files, reviews: approval, writers: new Set(['maint']) })).action, 'merge');
+  const approval = [
+    { user: { login: 'maint' }, state: 'APPROVED', commit_id: SHA },
+  ];
+  assert.equal(
+    evaluate(base({ files, reviews: approval, writers: new Set(['maint']) }))
+      .action,
+    'merge',
+  );
   // Approval by someone without write access does not count.
-  assert.equal(evaluate(base({ files, reviews: approval, writers: new Set() })).action, 'comment');
+  assert.equal(
+    evaluate(base({ files, reviews: approval, writers: new Set() })).action,
+    'comment',
+  );
   // Approval of an older commit does not count.
-  const stale = [{ user: { login: 'maint' }, state: 'APPROVED', commit_id: 'b'.repeat(40) }];
-  assert.equal(evaluate(base({ files, reviews: stale, writers: new Set(['maint']) })).action, 'comment');
+  const stale = [
+    { user: { login: 'maint' }, state: 'APPROVED', commit_id: 'b'.repeat(40) },
+  ];
+  assert.equal(
+    evaluate(base({ files, reviews: stale, writers: new Set(['maint']) }))
+      .action,
+    'comment',
+  );
 });
 
 test('review-required label needs writer approval on the current commit', () => {
   const labeledPr = pr({ labels: [{ name: 'review-required' }] });
   const blocked = evaluate(base({ pr: labeledPr }));
-  assert.deepEqual([blocked.action, blocked.reason, blocked.detail],
-    ['comment', 'needs-approval', ['review-required label']]);
+  assert.deepEqual(
+    [blocked.action, blocked.reason, blocked.detail],
+    ['comment', 'needs-approval', ['review-required label']],
+  );
 
-  const approval = [{ user: { login: 'maint' }, state: 'APPROVED', commit_id: SHA }];
-  assert.equal(evaluate(base({ pr: labeledPr, reviews: approval, writers: new Set(['maint']) })).action, 'merge');
+  const approval = [
+    { user: { login: 'maint' }, state: 'APPROVED', commit_id: SHA },
+  ];
+  assert.equal(
+    evaluate(
+      base({ pr: labeledPr, reviews: approval, writers: new Set(['maint']) }),
+    ).action,
+    'merge',
+  );
 });
 
 test('a later change request cancels an approval', () => {
@@ -131,7 +250,11 @@ test('a contributor pull request must link an issue', () => {
 });
 
 test('the linked issue must be assigned to the author', () => {
-  const d = evaluate(base({ linkedIssues: [{ number: 5, state: 'OPEN', assignees: ['someone'] }] }));
+  const d = evaluate(
+    base({
+      linkedIssues: [{ number: 5, state: 'OPEN', assignees: ['someone'] }],
+    }),
+  );
   assert.deepEqual([d.reason, d.detail], ['issue-not-assigned', ['#5']]);
   const mixed = [
     { number: 5, state: 'OPEN', assignees: ['someone'] },
@@ -148,9 +271,18 @@ test('maintainers and bots do not need a linked issue', () => {
 });
 
 test('never merges without a passing security scan on the commit', () => {
-  assert.deepEqual(evaluate(base({ security: null })), { action: 'wait', reason: 'security-scan-pending' });
-  assert.equal(evaluate(base({ security: { state: 'pending' } })).action, 'wait');
-  assert.deepEqual(evaluate(base({ security: { state: 'failure' } })), { action: 'skip', reason: 'security-scan-failed' });
+  assert.deepEqual(evaluate(base({ security: null })), {
+    action: 'wait',
+    reason: 'security-scan-pending',
+  });
+  assert.equal(
+    evaluate(base({ security: { state: 'pending' } })).action,
+    'wait',
+  );
+  assert.deepEqual(evaluate(base({ security: { state: 'failure' } })), {
+    action: 'skip',
+    reason: 'security-scan-failed',
+  });
   assert.equal(evaluate(base({ security: { state: 'error' } })).action, 'skip');
   // Maintainers are scanned too.
   const m = { login: 'm', isWriter: true, isBot: false };
@@ -159,14 +291,27 @@ test('never merges without a passing security scan on the commit', () => {
 
 test('the security job check run is ignored in favour of its commit status', () => {
   const runs = checks(['lint'], ['security-scan', 'completed', 'skipped']);
-  assert.equal(evaluate(base({ checkRuns: runs, security: { state: 'failure' } })).action, 'skip');
+  assert.equal(
+    evaluate(base({ checkRuns: runs, security: { state: 'failure' } })).action,
+    'skip',
+  );
   const failedJob = checks(['lint'], ['security-scan', 'completed', 'failure']);
-  assert.equal(evaluate(base({ checkRuns: failedJob, security: { state: 'success' } })).action, 'merge');
+  assert.equal(
+    evaluate(base({ checkRuns: failedJob, security: { state: 'success' } }))
+      .action,
+    'merge',
+  );
 });
 
 test('a re-run check replaces the run it repeats', () => {
-  const runs = checks(['test', 'completed', 'failure', 1], ['test', 'completed', 'success', 2]);
+  const runs = checks(
+    ['test', 'completed', 'failure', 1],
+    ['test', 'completed', 'success', 2],
+  );
   assert.equal(evaluate(base({ checkRuns: runs })).action, 'merge');
-  const worse = checks(['test', 'completed', 'success', 1], ['test', 'completed', 'failure', 2]);
+  const worse = checks(
+    ['test', 'completed', 'success', 1],
+    ['test', 'completed', 'failure', 2],
+  );
   assert.equal(evaluate(base({ checkRuns: worse })).action, 'skip');
 });

@@ -11,10 +11,14 @@
  * data cannot enumerate patients, because HMAC without the key is not
  * searchable.
  */
-export async function beneficiaryRef(identifier: string, key: string): Promise<string> {
+export async function beneficiaryRef(
+  identifier: string,
+  key: string,
+): Promise<string> {
   const id = identifier.trim().toLowerCase();
   if (!id) throw new Error('Enter a patient reference');
-  if (key.length < 32) throw new Error('The secret key must be at least 32 characters');
+  if (key.length < 32)
+    throw new Error('The secret key must be at least 32 characters');
 
   const enc = new TextEncoder();
   const cryptoKey = await crypto.subtle.importKey(
@@ -25,7 +29,9 @@ export async function beneficiaryRef(identifier: string, key: string): Promise<s
     ['sign'],
   );
   const sig = await crypto.subtle.sign('HMAC', cryptoKey, enc.encode(id));
-  return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  return [...new Uint8Array(sig)]
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 /**
@@ -65,7 +71,11 @@ export async function matchesBeneficiaryRef(
   return derived === expectedRef.trim().toLowerCase();
 }
 
-export type SavedPatient = { nickname: string; identifier: string; key: string };
+export type SavedPatient = {
+  nickname: string;
+  identifier: string;
+  key: string;
+};
 
 /**
  * Reads a patient backup: a file or text holding JSON (the app's own backup
@@ -74,7 +84,8 @@ export type SavedPatient = { nickname: string; identifier: string; key: string }
  */
 function normalisePatientValue(value: unknown): string {
   if (typeof value === 'string') return value.trim();
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (typeof value === 'number' || typeof value === 'boolean')
+    return String(value);
   return '';
 }
 
@@ -96,12 +107,16 @@ function parseSavedPatientRecord(value: unknown): SavedPatient {
     const parsed = parseMaybeJson(cleaned);
     if (parsed !== cleaned) return parseSavedPatientRecord(parsed);
 
-    const [idPart, keyPart] = cleaned.split(/\s*\|\s*|\r?\n/).map((part) => part.trim());
+    const [idPart, keyPart] = cleaned
+      .split(/\s*\|\s*|\r?\n/)
+      .map((part) => part.trim());
     if (idPart && keyPart) {
       return { nickname: idPart, identifier: idPart, key: keyPart };
     }
 
-    throw new Error('The backup must be a JSON object with an identifier and key.');
+    throw new Error(
+      'The backup must be a JSON object with an identifier and key.',
+    );
   }
 
   if (Array.isArray(value)) {
@@ -145,20 +160,26 @@ function parseSavedPatientRecord(value: unknown): SavedPatient {
       record.secret,
   );
 
-  if (!identifier) throw new Error('This backup is missing a patient reference.');
+  if (!identifier)
+    throw new Error('This backup is missing a patient reference.');
   if (!key) throw new Error('This backup is missing a patient key.');
-  if (key.length < 32) throw new Error('The patient key must be at least 32 characters long.');
+  if (key.length < 32)
+    throw new Error('The patient key must be at least 32 characters long.');
 
   // Backups made by this app carry a nickname; anything else is listed under
   // its patient reference, which only ever lives on this device.
   const nickname =
     normalisePatientValue(
-      (nested as Record<string, unknown>).nickname ?? record.nickname ?? record.name,
+      (nested as Record<string, unknown>).nickname ??
+        record.nickname ??
+        record.name,
     ) || identifier;
   return { nickname, identifier, key };
 }
 
-export async function parsePatientBackup(input: string | File | unknown): Promise<SavedPatient> {
+export async function parsePatientBackup(
+  input: string | File | unknown,
+): Promise<SavedPatient> {
   if (input instanceof File) {
     return parseSavedPatientRecord(await input.text());
   }
@@ -183,9 +204,11 @@ export function serialisePatientBackup(patient: {
   const key = patient.key.trim();
   const nickname = patient.nickname?.trim();
 
-  if (!identifier) throw new Error('This backup is missing a patient reference.');
+  if (!identifier)
+    throw new Error('This backup is missing a patient reference.');
   if (!key) throw new Error('This backup is missing a patient key.');
-  if (key.length < 32) throw new Error('The patient key must be at least 32 characters long.');
+  if (key.length < 32)
+    throw new Error('The patient key must be at least 32 characters long.');
 
   return JSON.stringify(
     {
@@ -245,7 +268,8 @@ function persist(store: SavedPatientStore): boolean {
 /** Patient references and keys are persisted only in this browser's storage. */
 export const localIdentity = {
   load(): SavedPatientStore {
-    if (typeof window === 'undefined') return { patients: [], selectedNickname: '' };
+    if (typeof window === 'undefined')
+      return { patients: [], selectedNickname: '' };
     try {
       const stored = localStorage.getItem(PATIENTS_STORAGE);
       let patients = readPatients(stored);
@@ -260,9 +284,11 @@ export const localIdentity = {
         }
       }
       const requested = localStorage.getItem(SELECTED_STORAGE) ?? '';
-      const selectedNickname = patients.some((patient) => patient.nickname === requested)
+      const selectedNickname = patients.some(
+        (patient) => patient.nickname === requested,
+      )
         ? requested
-        : patients.at(-1)?.nickname ?? '';
+        : (patients.at(-1)?.nickname ?? '');
       return { patients, selectedNickname };
     } catch {
       return { patients: [], selectedNickname: '' };
@@ -273,7 +299,8 @@ export const localIdentity = {
     if (!cleanNickname) return false;
     const { patients } = this.load();
     const existing = patients.findIndex(
-      (patient) => patient.nickname.toLowerCase() === cleanNickname.toLowerCase(),
+      (patient) =>
+        patient.nickname.toLowerCase() === cleanNickname.toLowerCase(),
     );
     const patient = { nickname: cleanNickname, identifier, key };
     const next = [...patients];
@@ -283,7 +310,8 @@ export const localIdentity = {
   },
   select(nickname: string): boolean {
     const { patients } = this.load();
-    if (nickname && !patients.some((patient) => patient.nickname === nickname)) return false;
+    if (nickname && !patients.some((patient) => patient.nickname === nickname))
+      return false;
     return persist({ patients, selectedNickname: nickname });
   },
   rename(currentNickname: string, newNickname: string): boolean {
@@ -304,17 +332,22 @@ export const localIdentity = {
         ? { ...patient, nickname: cleanNickname }
         : patient,
     );
-    if (!next.some((patient) => patient.nickname === cleanNickname)) return false;
+    if (!next.some((patient) => patient.nickname === cleanNickname))
+      return false;
     return persist({
       patients: next,
-      selectedNickname: selectedNickname === currentNickname ? cleanNickname : selectedNickname,
+      selectedNickname:
+        selectedNickname === currentNickname ? cleanNickname : selectedNickname,
     });
   },
   remove(nickname: string): boolean {
     const { patients, selectedNickname } = this.load();
     const next = patients.filter((patient) => patient.nickname !== nickname);
     if (next.length === patients.length) return false;
-    const nextSelected = selectedNickname === nickname ? next.at(-1)?.nickname ?? '' : selectedNickname;
+    const nextSelected =
+      selectedNickname === nickname
+        ? (next.at(-1)?.nickname ?? '')
+        : selectedNickname;
     return persist({ patients: next, selectedNickname: nextSelected });
   },
 };

@@ -100,11 +100,17 @@ async function voucherIds(page: Page): Promise<string[]> {
   return texts.map((t) => t.trim().replace(/^#/, ''));
 }
 
-test('defaults to newest first and keeps an unfiltered URL clean', async ({ page }) => {
-  await expect.poll(() => voucherIds(page)).toEqual(['404', '402', '403', '401']);
+test('defaults to newest first and keeps an unfiltered URL clean', async ({
+  page,
+}) => {
+  await expect
+    .poll(() => voucherIds(page))
+    .toEqual(['404', '402', '403', '401']);
   await expect(page.getByText('Showing 4 of 4 vouchers')).toBeVisible();
   expect(new URL(page.url()).search).toBe('');
-  await expect(page.getByRole('button', { name: 'Reset filters' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Reset filters' })).toHaveCount(
+    0,
+  );
 });
 
 test('filters by status and keeps the choice on reload', async ({ page }) => {
@@ -116,41 +122,59 @@ test('filters by status and keeps the choice on reload', async ({ page }) => {
 
   await page.reload();
 
-  await expect(page.getByRole('combobox', { name: 'Status' })).toHaveValue('Funded');
+  await expect(page.getByRole('combobox', { name: 'Status' })).toHaveValue(
+    'Funded',
+  );
   await expect.poll(() => voucherIds(page)).toEqual(['403', '401']);
   expect(new URL(page.url()).searchParams.get('status')).toBe('Funded');
 });
 
 test('filters by clinic', async ({ page }) => {
-  await page.getByRole('combobox', { name: 'Clinic' }).selectOption(clinicB.address);
+  await page
+    .getByRole('combobox', { name: 'Clinic' })
+    .selectOption(clinicB.address);
 
   await expect(page).toHaveURL(new RegExp(`[?&]clinic=${clinicB.address}`));
   await expect.poll(() => voucherIds(page)).toEqual(['402', '403']);
   await expect(page.getByText('Showing 2 of 4 vouchers')).toBeVisible();
 });
 
-test('sorts by date and by amount, and moves sort into the URL', async ({ page }) => {
+test('sorts by date and by amount, and moves sort into the URL', async ({
+  page,
+}) => {
   const sort = page.getByRole('combobox', { name: 'Sort by' });
 
   await sort.selectOption('date-asc');
   await expect(page).toHaveURL(/[?&]sort=date-asc/);
-  await expect.poll(() => voucherIds(page)).toEqual(['401', '403', '402', '404']);
+  await expect
+    .poll(() => voucherIds(page))
+    .toEqual(['401', '403', '402', '404']);
 
   await sort.selectOption('amount-desc');
   await expect(page).toHaveURL(/[?&]sort=amount-desc/);
-  await expect.poll(() => voucherIds(page)).toEqual(['404', '402', '401', '403']);
+  await expect
+    .poll(() => voucherIds(page))
+    .toEqual(['404', '402', '401', '403']);
 
   await sort.selectOption('amount-asc');
-  await expect.poll(() => voucherIds(page)).toEqual(['403', '401', '402', '404']);
+  await expect
+    .poll(() => voucherIds(page))
+    .toEqual(['403', '401', '402', '404']);
 
   // Back to the default: the parameter is dropped rather than left behind.
   await sort.selectOption('date-desc');
-  await expect.poll(() => voucherIds(page)).toEqual(['404', '402', '403', '401']);
+  await expect
+    .poll(() => voucherIds(page))
+    .toEqual(['404', '402', '403', '401']);
   expect(new URL(page.url()).searchParams.has('sort')).toBe(false);
 });
 
-test('combines filters, explains an empty result and clears them', async ({ page }) => {
-  await page.getByRole('combobox', { name: 'Clinic' }).selectOption(clinicA.address);
+test('combines filters, explains an empty result and clears them', async ({
+  page,
+}) => {
+  await page
+    .getByRole('combobox', { name: 'Clinic' })
+    .selectOption(clinicA.address);
   await page.getByRole('combobox', { name: 'Status' }).selectOption('Claimed');
 
   await expect(
@@ -162,7 +186,9 @@ test('combines filters, explains an empty result and clears them', async ({ page
 
   await page.getByRole('button', { name: 'Clear filters' }).click();
 
-  await expect.poll(() => voucherIds(page)).toEqual(['404', '402', '403', '401']);
+  await expect
+    .poll(() => voucherIds(page))
+    .toEqual(['404', '402', '403', '401']);
   expect(new URL(page.url()).search).toBe('');
   await expect(page.getByRole('combobox', { name: 'Status' })).toHaveValue('');
 });

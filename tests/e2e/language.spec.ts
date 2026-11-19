@@ -70,7 +70,9 @@ test.describe('Language switching persists (#153)', () => {
 
     // The page is translated as soon as the choice is made.
     await expect(page.getByText(`Bon #${VOUCHER_ID}`)).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Historique' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Historique' }),
+    ).toBeVisible();
     // The switcher's own label follows the language it is in.
     await expect(languageSwitcher(page)).toHaveAttribute(
       'aria-label',
@@ -81,11 +83,15 @@ test.describe('Language switching persists (#153)', () => {
     await openNavMenu(page);
     await page.getByRole('link', { name: 'Clinic desk' }).first().click();
     await expect(page).toHaveURL(/\/clinic$/);
-    await expect(page.getByRole('heading', { name: 'Bureau clinique' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Bureau clinique' }),
+    ).toBeVisible();
 
     // A reload rebuilds the provider: the choice comes back from storage.
     await page.reload();
-    await expect(page.getByRole('heading', { name: 'Bureau clinique' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Bureau clinique' }),
+    ).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
 
     // The server rendered English; the client has to start from there too.
@@ -107,7 +113,9 @@ test.describe('Language switching persists (#153)', () => {
     await expect(page.locator('html')).toHaveAttribute('lang', 'sw');
   });
 
-  test('applies the stored language to a page opened directly', async ({ page }) => {
+  test('applies the stored language to a page opened directly', async ({
+    page,
+  }) => {
     const errors = hydrationErrors(page);
 
     await page.goto(`/vouchers/${VOUCHER_ID}`);
@@ -116,14 +124,18 @@ test.describe('Language switching persists (#153)', () => {
 
     // A different URL, loaded from scratch rather than navigated to.
     await page.goto('/clinic');
-    await expect(page.getByRole('heading', { name: 'Bureau clinique' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Bureau clinique' }),
+    ).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
 
     // The server rendered English; the client has to start from there too.
     expect(errors).toEqual([]);
   });
 
-  test('leaves English as the default for a first-time visitor', async ({ page }) => {
+  test('leaves English as the default for a first-time visitor', async ({
+    page,
+  }) => {
     await page.goto(`/vouchers/${VOUCHER_ID}`);
 
     await expect(languageSwitcher(page)).toHaveValue('en');

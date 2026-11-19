@@ -25,7 +25,8 @@ export function SavedPatientControls({
   const nickname = saveName ?? saved.selectedPatient?.nickname ?? '';
 
   function selectPatient(nicknameValue: string) {
-    const patient = saved.patients.find((item) => item.nickname === nicknameValue) ?? null;
+    const patient =
+      saved.patients.find((item) => item.nickname === nicknameValue) ?? null;
     setMessage(null);
     setSaveName(patient?.nickname ?? '');
     localIdentity.select(patient?.nickname ?? '');
@@ -39,11 +40,15 @@ export function SavedPatientControls({
       return;
     }
     if (!identifier.trim() || keyValue.length < 32) {
-      setMessage('Enter a patient reference and a key of at least 32 characters.');
+      setMessage(
+        'Enter a patient reference and a key of at least 32 characters.',
+      );
       return;
     }
     if (!localIdentity.save(nickname, identifier, keyValue)) {
-      setMessage('Could not save in this browser. Check that browser storage is available.');
+      setMessage(
+        'Could not save in this browser. Check that browser storage is available.',
+      );
       return;
     }
     setSaveName(nickname.trim());
@@ -66,7 +71,9 @@ export function SavedPatientControls({
       return;
     }
     if (!localIdentity.rename(patient.nickname, nextNickname)) {
-      setMessage('Could not rename this patient. Check that browser storage is available.');
+      setMessage(
+        'Could not rename this patient. Check that browser storage is available.',
+      );
       return;
     }
     if (saved.selectedNickname === patient.nickname) {
@@ -79,12 +86,16 @@ export function SavedPatientControls({
   function deletePatient(patient: SavedPatient) {
     setMessage(null);
     if (!localIdentity.remove(patient.nickname)) {
-      setMessage('Could not delete this patient. Check that browser storage is available.');
+      setMessage(
+        'Could not delete this patient. Check that browser storage is available.',
+      );
       return;
     }
     if (saved.selectedNickname === patient.nickname) {
       const next = localIdentity.load();
-      const selected = next.patients.find((item) => item.nickname === next.selectedNickname) ?? null;
+      const selected =
+        next.patients.find((item) => item.nickname === next.selectedNickname) ??
+        null;
       onSelect(selected);
       setSaveName(selected?.nickname ?? '');
     }
@@ -95,7 +106,7 @@ export function SavedPatientControls({
     <div className="space-y-3 border-b border-[var(--color-line)] pb-4">
       <div className="flex flex-col gap-2 sm:flex-row">
         <label className="block min-w-0 flex-1">
-          <span className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">
+          <span className="text-xs tracking-wide text-[var(--color-ink-soft)] uppercase">
             Saved patients
           </span>
           <select
@@ -126,7 +137,7 @@ export function SavedPatientControls({
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
         <label className="block min-w-0 flex-1">
-          <span className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">
+          <span className="text-xs tracking-wide text-[var(--color-ink-soft)] uppercase">
             Save patient as
           </span>
           <input
@@ -137,13 +148,17 @@ export function SavedPatientControls({
             className="mt-1 w-full rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm"
           />
         </label>
-        <Button variant="ghost" className="whitespace-nowrap" onClick={savePatient}>
+        <Button
+          variant="ghost"
+          className="whitespace-nowrap"
+          onClick={savePatient}
+        >
           Save patient
         </Button>
       </div>
       <p className="text-xs leading-relaxed text-[var(--color-ink-soft)]">
-        Saved references and keys stay in this browser only and are never sent to the
-        service. Anyone with access to this browser profile can use them.
+        Saved references and keys stay in this browser only and are never sent
+        to the service. Anyone with access to this browser profile can use them.
       </p>
       {message && <Alert>{message}</Alert>}
 
@@ -161,7 +176,9 @@ export function SavedPatientControls({
           Patient references and keys are not shown here.
         </p>
         {saved.patients.length === 0 ? (
-          <p className="py-2 text-sm text-[var(--color-ink-soft)]">No saved patients.</p>
+          <p className="py-2 text-sm text-[var(--color-ink-soft)]">
+            No saved patients.
+          </p>
         ) : (
           <ul className="divide-y divide-[var(--color-line)]">
             {saved.patients.map((patient) => (
@@ -169,7 +186,9 @@ export function SavedPatientControls({
                 {editingNickname === patient.nickname ? (
                   <div className="space-y-2">
                     <label className="block">
-                      <span className="text-xs text-[var(--color-ink-soft)]">New nickname</span>
+                      <span className="text-xs text-[var(--color-ink-soft)]">
+                        New nickname
+                      </span>
                       <input
                         aria-label="New nickname"
                         value={renameDraft}
@@ -178,7 +197,9 @@ export function SavedPatientControls({
                       />
                     </label>
                     <div className="flex gap-2">
-                      <Button onClick={() => renamePatient(patient)}>Save name</Button>
+                      <Button onClick={() => renamePatient(patient)}>
+                        Save name
+                      </Button>
                       <Button
                         variant="ghost"
                         onClick={() => setEditingNickname(null)}
@@ -189,7 +210,9 @@ export function SavedPatientControls({
                   </div>
                 ) : (
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="min-w-0 break-words font-medium">{patient.nickname}</span>
+                    <span className="min-w-0 font-medium break-words">
+                      {patient.nickname}
+                    </span>
                     <div className="flex gap-2">
                       <Button
                         variant="ghost"

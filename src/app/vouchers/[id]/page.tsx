@@ -7,7 +7,13 @@ import { use, useEffect, useState } from 'react';
 import { ApiError } from '@/lib/api';
 import { formatDate, formatUsdc } from '@/lib/amounts';
 import { config, explorerContract, explorerTx } from '@/lib/config';
-import { useLiveUpdates, useNameIndex, useNow, useVoucher, useVoucherEvents } from '@/lib/hooks';
+import {
+  useLiveUpdates,
+  useNameIndex,
+  useNow,
+  useVoucher,
+  useVoucherEvents,
+} from '@/lib/hooks';
 import { problemReportUrl } from '@/lib/report-problem';
 import { rememberRecentVoucherId } from '@/lib/recent-vouchers';
 import { stepTxHashes, voucherTimeline, type StepState } from '@/lib/timeline';
@@ -16,7 +22,14 @@ import { CopyValue } from '@/components/CopyValue';
 import { SkeletonDetail } from '@/components/Skeleton';
 import { VoucherQr } from '@/components/VoucherQr';
 import { VoucherRow } from '@/components/VoucherRow';
-import { Alert, Button, Card, ExplorerLink, Field, StatusBadge } from '@/components/ui';
+import {
+  Alert,
+  Button,
+  Card,
+  ExplorerLink,
+  Field,
+  StatusBadge,
+} from '@/components/ui';
 import { buildVoucherExpiryIcs } from '@/lib/ics';
 import { useLocaleContext } from '@/i18n/LocaleContext';
 
@@ -36,7 +49,11 @@ function isValidVoucherId(id: string): boolean {
  *
  * Uses SWR caching (#63) and live updates via SSE with polling fallback (#64).
  */
-export default function VoucherPage({ params }: { params: Promise<{ id: string }> }) {
+export default function VoucherPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const { address } = useWallet();
   const { t, locale } = useLocaleContext();
@@ -77,7 +94,12 @@ export default function VoucherPage({ params }: { params: Promise<{ id: string }
     }
   }
 
-  const { voucher: v, error, rawError, mutate } = useVoucher(validId ? id : undefined);
+  const {
+    voucher: v,
+    error,
+    rawError,
+    mutate,
+  } = useVoucher(validId ? id : undefined);
   const loadedVoucherId = v?.id;
   useEffect(() => {
     if (loadedVoucherId) rememberRecentVoucherId(loadedVoucherId);
@@ -109,7 +131,9 @@ export default function VoucherPage({ params }: { params: Promise<{ id: string }
   function addToCalendar() {
     if (!v || typeof window === 'undefined') return;
     const expiresAtMs =
-      typeof v.expiresAt === 'string' ? Date.parse(v.expiresAt) : v.expiresAt.getTime();
+      typeof v.expiresAt === 'string'
+        ? Date.parse(v.expiresAt)
+        : v.expiresAt.getTime();
     const expiresAt = Math.floor(expiresAtMs / 1000);
     const ics = buildVoucherExpiryIcs({
       id: v.id,
@@ -156,7 +180,9 @@ export default function VoucherPage({ params }: { params: Promise<{ id: string }
               aria-label="Copy link"
             >
               {copied ? (
-                <span className="font-medium text-emerald-700">{t('voucher.linkCopied')}</span>
+                <span className="font-medium text-emerald-700">
+                  {t('voucher.linkCopied')}
+                </span>
               ) : (
                 <>
                   <svg
@@ -204,15 +230,22 @@ export default function VoucherPage({ params }: { params: Promise<{ id: string }
           </h1>
           <p className="text-sm text-[var(--color-ink-soft)]">
             {t('voucher.at')}{' '}
-            <Link href={`/clinics/${v.provider.address}`} className="underline underline-offset-2">
+            <Link
+              href={`/clinics/${v.provider.address}`}
+              className="underline underline-offset-2"
+            >
               {v.provider.name}
             </Link>{' '}
             · {v.provider.country}
           </p>
         </div>
         <div className="text-end">
-          <div className="mono text-2xl font-semibold">${formatUsdc(v.amount, locale)}</div>
-          <div className="text-xs text-[var(--color-ink-soft)]">{t('common.usdc')}</div>
+          <div className="mono text-2xl font-semibold">
+            ${formatUsdc(v.amount, locale)}
+          </div>
+          <div className="text-xs text-[var(--color-ink-soft)]">
+            {t('common.usdc')}
+          </div>
         </div>
       </div>
 
@@ -261,7 +294,11 @@ export default function VoucherPage({ params }: { params: Promise<{ id: string }
         <Card className="voucher-print-history space-y-4 p-5 print:space-y-2 print:p-3">
           <div className="print:hidden">
             <Field label={t('voucher.fundedBy')}>
-              <CopyValue value={v.funder} name={names.get(v.funder)} label="funder address" />
+              <CopyValue
+                value={v.funder}
+                name={names.get(v.funder)}
+                label="funder address"
+              />
             </Field>
           </div>
           <Field label={t('voucher.expires')}>
@@ -292,12 +329,15 @@ export default function VoucherPage({ params }: { params: Promise<{ id: string }
             <Field label={t('voucher.disputeOutcome')}>
               <span className="font-medium">
                 {v.disputeOutcome}
-                {v.disputeResolvedAt && ` · ${formatDate(v.disputeResolvedAt, locale)}`}
+                {v.disputeResolvedAt &&
+                  ` · ${formatDate(v.disputeResolvedAt, locale)}`}
               </span>
             </Field>
           )}
           {v.receipt && (
-            <Field label={t('voucher.careReceipt')}>{t('voucher.minted')} {formatDate(v.receipt.settledAt, locale)}</Field>
+            <Field label={t('voucher.careReceipt')}>
+              {t('voucher.minted')} {formatDate(v.receipt.settledAt, locale)}
+            </Field>
           )}
           <div className="space-y-4 print:hidden">
             <Field label={t('voucher.patientReference')}>
@@ -334,7 +374,7 @@ export default function VoucherPage({ params }: { params: Promise<{ id: string }
       {/* Only the funder can dispute, but anyone who notices a problem can
           report it (#138). The prefilled issue carries public voucher
           details only — never the patient reference. */}
-      <Card className="print:hidden space-y-2 p-5">
+      <Card className="space-y-2 p-5 print:hidden">
         <h2 className="text-sm font-semibold">{t('voucher.reportProblem')}</h2>
         <p className="text-xs leading-relaxed text-[var(--color-ink-soft)]">
           {t('voucher.reportProblemIntro')}

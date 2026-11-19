@@ -16,14 +16,26 @@ export function toCsvString(
 export function buildVoucherCsvRows(
   vouchers: Voucher[],
   providerNames?: Map<string, string>,
-  baseUrl = typeof window === 'undefined' ? 'http://localhost' : window.location.origin,
+  baseUrl = typeof window === 'undefined'
+    ? 'http://localhost'
+    : window.location.origin,
 ): Array<Array<string>> {
   const rows: Array<Array<string>> = [
-    ['id', 'clinic', 'service', 'amount', 'status', 'funded', 'settled or refunded date', 'transaction link'],
+    [
+      'id',
+      'clinic',
+      'service',
+      'amount',
+      'status',
+      'funded',
+      'settled or refunded date',
+      'transaction link',
+    ],
   ];
 
   for (const voucher of vouchers) {
-    const clinic = providerNames?.get(voucher.provider.address) ?? voucher.provider.name;
+    const clinic =
+      providerNames?.get(voucher.provider.address) ?? voucher.provider.name;
     rows.push([
       voucher.id,
       clinic,
@@ -31,7 +43,12 @@ export function buildVoucherCsvRows(
       formatUsdc(voucher.amount).replaceAll(',', ''),
       voucher.status,
       formatDate(voucher.createdAt),
-      formatDate(voucher.disputeResolvedAt ?? voucher.attestedAt ?? voucher.claimedAt ?? voucher.createdAt),
+      formatDate(
+        voucher.disputeResolvedAt ??
+          voucher.attestedAt ??
+          voucher.claimedAt ??
+          voucher.createdAt,
+      ),
       new URL(`/vouchers/${voucher.id}`, baseUrl).toString(),
     ]);
   }
@@ -46,7 +63,8 @@ export function buildReceiptCsvRows(
   const rows: Array<Array<string>> = [['date', 'clinic', 'service', 'amount']];
 
   for (const receipt of receipts) {
-    const clinic = providerNames?.get(receipt.providerAddress) ?? receipt.providerAddress;
+    const clinic =
+      providerNames?.get(receipt.providerAddress) ?? receipt.providerAddress;
     rows.push([
       formatDate(receipt.settledAt),
       clinic,
@@ -63,7 +81,9 @@ export function downloadCsv(
   rows: Array<Array<string | number | null | undefined>>,
 ): void {
   if (typeof document === 'undefined') return;
-  const blob = new Blob([toCsvString(rows)], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob([toCsvString(rows)], {
+    type: 'text/csv;charset=utf-8;',
+  });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

@@ -38,7 +38,11 @@ describe('buildVoucherCsvRows', () => {
       isRefundable: false,
     } as Voucher;
 
-    const rows = buildVoucherCsvRows([voucher], new Map([['GA1', 'Clinic One']]), 'https://example.com');
+    const rows = buildVoucherCsvRows(
+      [voucher],
+      new Map([['GA1', 'Clinic One']]),
+      'https://example.com',
+    );
 
     expect(rows[0]).toEqual([
       'id',
@@ -67,7 +71,10 @@ describe('buildReceiptCsvRows', () => {
       settledAt: '2026-05-25T00:00:00.000Z',
     } as Receipt;
 
-    const rows = buildReceiptCsvRows([receipt], new Map([['GA9', 'Care Centre']]));
+    const rows = buildReceiptCsvRows(
+      [receipt],
+      new Map([['GA9', 'Care Centre']]),
+    );
 
     expect(rows[0]).toEqual(['date', 'clinic', 'service', 'amount']);
     expect(rows[1]).toEqual(['25 May 2026', 'Care Centre', 'X-ray', '2.50']);

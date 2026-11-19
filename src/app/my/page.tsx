@@ -14,8 +14,18 @@ import {
   serialisePatientBackup,
 } from '@/lib/beneficiary';
 import { humaniseError } from '@/lib/errors';
-import { buildReceiptCsvRows, buildVoucherCsvRows, downloadCsv } from '@/lib/csv';
-import { invalidateVouchers, useLiveUpdates, useProviders, useReceipts, useVouchers } from '@/lib/hooks';
+import {
+  buildReceiptCsvRows,
+  buildVoucherCsvRows,
+  downloadCsv,
+} from '@/lib/csv';
+import {
+  invalidateVouchers,
+  useLiveUpdates,
+  useProviders,
+  useReceipts,
+  useVouchers,
+} from '@/lib/hooks';
 import { voucher as protocol } from '@/lib/protocol';
 import { useSavedIdentity } from '@/lib/useSavedIdentity';
 import {
@@ -113,10 +123,9 @@ export default function MyPage() {
     error: receiptsError,
   } = useReceipts(activeRef);
 
-  const {
-    vouchers: refVouchers,
-    error: refVouchersError,
-  } = useVouchers(activeRef ? { beneficiaryRef: activeRef } : null);
+  const { vouchers: refVouchers, error: refVouchersError } = useVouchers(
+    activeRef ? { beneficiaryRef: activeRef } : null,
+  );
 
   const providerMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -128,7 +137,10 @@ export default function MyPage() {
 
   // Combine wallet vouchers with any looked-up beneficiary history vouchers
   const seenIds = new Set(walletFunded.map((v) => v.id));
-  const funded = [...walletFunded, ...refVouchers.filter((v) => !seenIds.has(v.id))];
+  const funded = [
+    ...walletFunded,
+    ...refVouchers.filter((v) => !seenIds.has(v.id)),
+  ];
 
   // Filters and sort live in the URL, so a reload keeps the view.
   const statusFilter = parseStatus(searchParams.get('status'));
@@ -138,7 +150,10 @@ export default function MyPage() {
   const clinics = clinicOptions(funded);
   const clinicChoices =
     clinicFilter && !clinics.some((c) => c.address === clinicFilter)
-      ? [...clinics, { address: clinicFilter, name: shortAddress(clinicFilter, 6) }]
+      ? [
+          ...clinics,
+          { address: clinicFilter, name: shortAddress(clinicFilter, 6) },
+        ]
       : clinics;
   // Only statuses in use are offered, plus a stale one still in the URL.
   const statusChoices = VOUCHER_STATUSES.filter(
@@ -167,7 +182,8 @@ export default function MyPage() {
   function setParam(key: 'status' | 'clinic' | 'sort', value: string) {
     writeParams((params) => {
       // Defaults are omitted, so an unfiltered /my stays a clean link.
-      if (!value || (key === 'sort' && value === DEFAULT_SORT)) params.delete(key);
+      if (!value || (key === 'sort' && value === DEFAULT_SORT))
+        params.delete(key);
       else params.set(key, value);
     });
   }
@@ -194,7 +210,11 @@ export default function MyPage() {
 
     for (let i = 0; i < toRefund.length; i++) {
       const v = toRefund[i];
-      setBatchProgress({ current: i + 1, total: toRefund.length, currentId: v.id });
+      setBatchProgress({
+        current: i + 1,
+        total: toRefund.length,
+        currentId: v.id,
+      });
       try {
         await protocol.refund(address, v.id, signTransaction);
         succeeded.push(v.id);
@@ -215,7 +235,11 @@ export default function MyPage() {
     setError(null);
     try {
       const ref = await beneficiaryRef(identifier, secret);
-      localIdentity.save(saved.selectedNickname || 'Saved patient', identifier, secret);
+      localIdentity.save(
+        saved.selectedNickname || 'Saved patient',
+        identifier,
+        secret,
+      );
       setActiveRef(ref);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load history');
@@ -249,7 +273,10 @@ export default function MyPage() {
       }
     }
 
-    downloadCsv('funded-vouchers.csv', buildVoucherCsvRows(all, providerMap, window.location.origin));
+    downloadCsv(
+      'funded-vouchers.csv',
+      buildVoucherCsvRows(all, providerMap, window.location.origin),
+    );
   }
 
   async function downloadCareHistoryCsv() {
@@ -283,15 +310,21 @@ export default function MyPage() {
       const patient = await parsePatientBackup(input);
       // Saved into the same store as every other saved patient, and
       // selected, so it appears in the patient picker straight away.
-      if (!localIdentity.save(patient.nickname, patient.identifier, patient.key)) {
-        throw new Error('This device could not save the patient. Is storage blocked?');
+      if (
+        !localIdentity.save(patient.nickname, patient.identifier, patient.key)
+      ) {
+        throw new Error(
+          'This device could not save the patient. Is storage blocked?',
+        );
       }
       localIdentity.select(patient.nickname);
       setIdentifier(patient.identifier);
       setSecret(patient.key);
       setError(null);
     } catch (err) {
-      setImportError(err instanceof Error ? err.message : 'That patient backup is invalid.');
+      setImportError(
+        err instanceof Error ? err.message : 'That patient backup is invalid.',
+      );
     }
   }
 
@@ -312,14 +345,21 @@ export default function MyPage() {
   function downloadPatientBackup() {
     if (!identifier || !secret) return;
 
-    const fileName = `${(identifier || 'patient').trim().replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '') || 'patient'}-backup.json`;
+    const fileName = `${
+      (identifier || 'patient')
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-zA-Z0-9._-]/g, '') || 'patient'
+    }-backup.json`;
     const payload = serialisePatientBackup({
-        nickname: saved.selectedNickname || undefined,
-        identifier,
-        key: secret,
-        createdAt: new Date().toISOString(),
-      });
-    const blob = new Blob([payload], { type: 'application/json;charset=utf-8' });
+      nickname: saved.selectedNickname || undefined,
+      identifier,
+      key: secret,
+      createdAt: new Date().toISOString(),
+    });
+    const blob = new Blob([payload], {
+      type: 'application/json;charset=utf-8',
+    });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
@@ -402,7 +442,10 @@ export default function MyPage() {
               setQrBusy(false);
               setQrOpen(false);
               await applyImportedPatient(text);
-            } else if (error && !/NotFoundException|NoCodeFound/.test(String(error))) {
+            } else if (
+              error &&
+              !/NotFoundException|NoCodeFound/.test(String(error))
+            ) {
               setQrBusy(false);
               setQrOpen(false);
               setImportError(
@@ -417,7 +460,9 @@ export default function MyPage() {
           setQrBusy(false);
           setQrOpen(false);
           setImportError(
-            err instanceof Error ? err.message : 'Unable to open the QR scanner.',
+            err instanceof Error
+              ? err.message
+              : 'Unable to open the QR scanner.',
           );
         }
       }
@@ -442,7 +487,9 @@ export default function MyPage() {
 
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-xl font-semibold tracking-tight">Vouchers I funded</h1>
+          <h1 className="text-xl font-semibold tracking-tight">
+            Vouchers I funded
+          </h1>
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href="/my/transactions"
@@ -451,7 +498,10 @@ export default function MyPage() {
               Transaction history
             </Link>
             {walletFunded.length > 0 && (
-              <Button variant="ghost" onClick={() => void downloadFundedVouchersCsv()}>
+              <Button
+                variant="ghost"
+                onClick={() => void downloadFundedVouchersCsv()}
+              >
                 Download CSV
               </Button>
             )}
@@ -479,7 +529,9 @@ export default function MyPage() {
             <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-line)]">
               <div
                 className="h-full bg-[var(--color-brand)] transition-all duration-300"
-                style={{ width: `${(batchProgress.current / batchProgress.total) * 100}%` }}
+                style={{
+                  width: `${(batchProgress.current / batchProgress.total) * 100}%`,
+                }}
               />
             </div>
           </div>
@@ -497,7 +549,10 @@ export default function MyPage() {
               <Alert>
                 Failed to refund {batchSummary.failed.length} voucher
                 {batchSummary.failed.length === 1 ? '' : 's'}:{' '}
-                {batchSummary.failed.map((f) => `#${f.id} (${f.error})`).join(', ')}.
+                {batchSummary.failed
+                  .map((f) => `#${f.id} (${f.error})`)
+                  .join(', ')}
+                .
               </Alert>
             )}
           </div>
@@ -513,7 +568,7 @@ export default function MyPage() {
           <Card className="space-y-3 p-4">
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="block">
-                <span className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">
+                <span className="text-xs tracking-wide text-[var(--color-ink-soft)] uppercase">
                   Status
                 </span>
                 <select
@@ -530,7 +585,7 @@ export default function MyPage() {
                 </select>
               </label>
               <label className="block">
-                <span className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">
+                <span className="text-xs tracking-wide text-[var(--color-ink-soft)] uppercase">
                   Clinic
                 </span>
                 <select
@@ -547,12 +602,14 @@ export default function MyPage() {
                 </select>
               </label>
               <label className="block">
-                <span className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">
+                <span className="text-xs tracking-wide text-[var(--color-ink-soft)] uppercase">
                   Sort by
                 </span>
                 <select
                   value={sort}
-                  onChange={(e) => setParam('sort', e.target.value as VoucherSort)}
+                  onChange={(e) =>
+                    setParam('sort', e.target.value as VoucherSort)
+                  }
                   className="mt-1 w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-sm"
                 >
                   {(Object.keys(SORT_LABELS) as VoucherSort[]).map((s) => (
@@ -607,8 +664,8 @@ export default function MyPage() {
       <section className="space-y-3">
         <h2 className="text-xl font-semibold tracking-tight">Care history</h2>
         <p className="text-sm text-[var(--color-ink-soft)]">
-          Enter the patient reference and key used when funding. Both stay on this
-          device; only a derived, opaque value is ever queried.
+          Enter the patient reference and key used when funding. Both stay on
+          this device; only a derived, opaque value is ever queried.
         </p>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -663,9 +720,9 @@ export default function MyPage() {
               </Button>
             </div>
             <Alert kind="info">
-              Anyone who holds this patient reference and key can look up the patient&apos;s care
-              history. Keep this backup in a private, encrypted place and do not email, text, or
-              share it in a chat.
+              Anyone who holds this patient reference and key can look up the
+              patient&apos;s care history. Keep this backup in a private,
+              encrypted place and do not email, text, or share it in a chat.
             </Alert>
             <label className="flex items-start gap-3 text-sm text-[var(--color-ink)]">
               <input
@@ -675,14 +732,15 @@ export default function MyPage() {
                 className="mt-1 h-4 w-4 rounded border-[var(--color-line)]"
               />
               <span>
-                I understand that this secret allows someone to view this patient&apos;s care history,
-                and I will keep the backup secure.
+                I understand that this secret allows someone to view this
+                patient&apos;s care history, and I will keep the backup secure.
               </span>
             </label>
             {backupAccepted && (
               <div className="rounded-lg border border-[var(--color-line)] bg-[var(--color-canvas)] p-3">
-                <pre className="overflow-x-auto whitespace-pre-wrap break-words text-xs leading-6 text-[var(--color-ink)]">
-                  {patientBackup || 'No backup is available until the patient reference and key are entered.'}
+                <pre className="overflow-x-auto text-xs leading-6 break-words whitespace-pre-wrap text-[var(--color-ink)]">
+                  {patientBackup ||
+                    'No backup is available until the patient reference and key are entered.'}
                 </pre>
               </div>
             )}
@@ -702,7 +760,9 @@ export default function MyPage() {
               </Button>
             </div>
             {backupBusy && (
-              <div className="text-xs text-[var(--color-ink-soft)]">Generating QR code…</div>
+              <div className="text-xs text-[var(--color-ink-soft)]">
+                Generating QR code…
+              </div>
             )}
             {backupError && <Alert>{backupError}</Alert>}
             {backupQr && (
@@ -724,12 +784,26 @@ export default function MyPage() {
           <Card className="space-y-3 p-4">
             <div className="flex items-center justify-between gap-2">
               <div className="text-sm font-medium">Scan patient QR code</div>
-              <Button variant="ghost" className="px-3 py-1.5 text-xs" onClick={() => setQrOpen(false)}>
+              <Button
+                variant="ghost"
+                className="px-3 py-1.5 text-xs"
+                onClick={() => setQrOpen(false)}
+              >
                 Close
               </Button>
             </div>
-            <video ref={videoRef} className="w-full rounded-lg border border-[var(--color-line)] bg-black" autoPlay muted playsInline />
-            {qrBusy && <div className="text-xs text-[var(--color-ink-soft)]">Scanning…</div>}
+            <video
+              ref={videoRef}
+              className="w-full rounded-lg border border-[var(--color-line)] bg-black"
+              autoPlay
+              muted
+              playsInline
+            />
+            {qrBusy && (
+              <div className="text-xs text-[var(--color-ink-soft)]">
+                Scanning…
+              </div>
+            )}
           </Card>
         )}
 
@@ -744,7 +818,7 @@ export default function MyPage() {
           />
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="block">
-              <span className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">
+              <span className="text-xs tracking-wide text-[var(--color-ink-soft)] uppercase">
                 Patient reference
               </span>
               <input
@@ -754,7 +828,7 @@ export default function MyPage() {
               />
             </label>
             <label className="block">
-              <span className="text-xs uppercase tracking-wide text-[var(--color-ink-soft)]">
+              <span className="text-xs tracking-wide text-[var(--color-ink-soft)] uppercase">
                 Secret key
               </span>
               <input
@@ -774,7 +848,10 @@ export default function MyPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <Field label="Total care funded">${spend}</Field>
               <div className="flex flex-wrap items-center gap-2">
-                <Button variant="ghost" onClick={() => void downloadCareHistoryCsv()}>
+                <Button
+                  variant="ghost"
+                  onClick={() => void downloadCareHistoryCsv()}
+                >
                   Download CSV
                 </Button>
                 <Link
@@ -801,7 +878,10 @@ export default function MyPage() {
             </div>
             <ul className="mt-4 divide-y divide-[var(--color-line)]">
               {receipts.map((r) => (
-                <li key={r.voucherId} className="flex justify-between py-3 text-sm">
+                <li
+                  key={r.voucherId}
+                  className="flex justify-between py-3 text-sm"
+                >
                   <div>
                     <div>{r.serviceLabel ?? `Service ${r.serviceCode}`}</div>
                     <div className="text-xs text-[var(--color-ink-soft)]">

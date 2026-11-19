@@ -23,7 +23,8 @@ import { sameOriginScriptUrl } from '@/lib/trusted-types';
 export function ServiceWorkerRegistration() {
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') return;
-    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator))
+      return;
 
     // `register` is a TrustedScriptURL sink (#147): the CSP only lets a
     // `TrustedScriptURL` through, so the path goes via the allowlisted

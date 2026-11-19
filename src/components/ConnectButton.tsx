@@ -82,7 +82,7 @@ export function ConnectButton() {
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((prev) => !prev)}
-        className="inline-flex max-sm:min-h-11 items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-1.5 text-xs font-medium text-[var(--color-ink)] transition hover:bg-[var(--color-canvas)] focus:outline-none focus:ring-2 focus:ring-[var(--color-brand)]"
+        className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-1.5 text-xs font-medium text-[var(--color-ink)] transition hover:bg-[var(--color-canvas)] focus:ring-2 focus:ring-[var(--color-brand)] focus:outline-none max-sm:min-h-11"
       >
         <span
           aria-hidden="true"
@@ -91,7 +91,10 @@ export function ConnectButton() {
           }`}
         />
         <span className="mono">{shortAddress(address, 6)}</span>
-        <span aria-hidden="true" className="text-[10px] text-[var(--color-ink-soft)]">
+        <span
+          aria-hidden="true"
+          className="text-[10px] text-[var(--color-ink-soft)]"
+        >
           ▼
         </span>
       </button>
@@ -107,7 +110,7 @@ export function ConnectButton() {
           {/* Wallet Name & Status */}
           <div className="flex items-center justify-between border-b border-[var(--color-line)] pb-3">
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-ink-soft)]">
+              <div className="text-[10px] font-semibold tracking-wider text-[var(--color-ink-soft)] uppercase">
                 Wallet
               </div>
               <div className="mt-0.5 text-sm font-semibold text-[var(--color-ink)]">
@@ -129,12 +132,12 @@ export function ConnectButton() {
 
           {/* Full Address Copy */}
           <div className="border-b border-[var(--color-line)] py-3">
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-ink-soft)]">
+            <div className="text-[10px] font-semibold tracking-wider text-[var(--color-ink-soft)] uppercase">
               Account Address
             </div>
             <div className="mt-1.5 flex items-center justify-between gap-2 rounded-lg bg-[var(--color-canvas)] p-2">
               <span
-                className="mono select-all truncate text-xs text-[var(--color-ink)]"
+                className="mono truncate text-xs text-[var(--color-ink)] select-all"
                 title={address}
               >
                 {address}
@@ -155,8 +158,9 @@ export function ConnectButton() {
             <div className="my-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
               <p className="font-semibold">Account not funded on Stellar</p>
               <p className="mt-1 text-[11px] leading-relaxed text-amber-800">
-                This account has no XLM balance. Any contract transaction will fail
-                with &ldquo;account not found&rdquo; until it receives minimum reserve funds.
+                This account has no XLM balance. Any contract transaction will
+                fail with &ldquo;account not found&rdquo; until it receives
+                minimum reserve funds.
               </p>
               {config.network === 'testnet' && (
                 <div className="mt-2">
@@ -182,9 +186,12 @@ export function ConnectButton() {
               <p className="mt-1 text-[11px] leading-relaxed text-amber-800">
                 Spendable balance is{' '}
                 <span className="font-semibold">
-                  {spendableXlm !== null ? `${spendableXlm.toFixed(2)} XLM` : '< 1.00 XLM'}
+                  {spendableXlm !== null
+                    ? `${spendableXlm.toFixed(2)} XLM`
+                    : '< 1.00 XLM'}
                 </span>
-                . In addition to the base account reserve, transactions require spendable XLM to pay network fees.
+                . In addition to the base account reserve, transactions require
+                spendable XLM to pay network fees.
               </p>
               {config.network === 'testnet' && (
                 <div className="mt-2">

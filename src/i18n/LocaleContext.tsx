@@ -151,7 +151,9 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
       }
 
       return current.replace(/{(\w+)}/g, (_, match) => {
-        return params[match] !== undefined ? String(params[match]) : `{${match}}`;
+        return params[match] !== undefined
+          ? String(params[match])
+          : `{${match}}`;
       });
     },
     [locale],

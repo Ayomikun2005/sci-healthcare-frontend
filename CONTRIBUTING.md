@@ -107,8 +107,8 @@ your browser, unlike the container's `localhost:8080`, and the CSP follows the
 same variable, so no other change is needed. Restart `npm run dev` after the
 script runs, since Next reads `.env.local` once at start-up.
 
-To use a backend running in *another* codespace instead, forward its port
-publicly (**Ports** tab → the 8080 port → *Public*) and run:
+To use a backend running in _another_ codespace instead, forward its port
+publicly (**Ports** tab → the 8080 port → _Public_) and run:
 
 ```bash
 SCI_BACKEND_CODESPACE=<that-codespace-name> node scripts/codespace-env.mjs --force

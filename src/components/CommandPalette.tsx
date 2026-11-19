@@ -16,15 +16,60 @@ type Command = {
 };
 
 const PAGES: Command[] = [
-  { id: 'clinics', label: 'Clinics', description: 'Browse verified clinics', href: '/' },
-  { id: 'how-it-works', label: 'How it works', description: 'Learn about care vouchers', href: '/how-it-works' },
-  { id: 'my-vouchers', label: 'My vouchers', description: 'View funded vouchers', href: '/my' },
-  { id: 'clinic-desk', label: 'Clinic desk', description: 'Manage a clinic', href: '/clinic' },
-  { id: 'attest', label: 'Attest', description: 'Review care claims', href: '/attest' },
-  { id: 'attesters', label: 'Attesters', description: 'View trusted attesters', href: '/attesters' },
-  { id: 'stats', label: 'Stats', description: 'View protocol statistics', href: '/stats' },
-  { id: 'faq', label: 'FAQ', description: 'Frequently asked questions', href: '/faq' },
-  { id: 'privacy', label: 'Privacy', description: 'Privacy information', href: '/privacy' },
+  {
+    id: 'clinics',
+    label: 'Clinics',
+    description: 'Browse verified clinics',
+    href: '/',
+  },
+  {
+    id: 'how-it-works',
+    label: 'How it works',
+    description: 'Learn about care vouchers',
+    href: '/how-it-works',
+  },
+  {
+    id: 'my-vouchers',
+    label: 'My vouchers',
+    description: 'View funded vouchers',
+    href: '/my',
+  },
+  {
+    id: 'clinic-desk',
+    label: 'Clinic desk',
+    description: 'Manage a clinic',
+    href: '/clinic',
+  },
+  {
+    id: 'attest',
+    label: 'Attest',
+    description: 'Review care claims',
+    href: '/attest',
+  },
+  {
+    id: 'attesters',
+    label: 'Attesters',
+    description: 'View trusted attesters',
+    href: '/attesters',
+  },
+  {
+    id: 'stats',
+    label: 'Stats',
+    description: 'View protocol statistics',
+    href: '/stats',
+  },
+  {
+    id: 'faq',
+    label: 'FAQ',
+    description: 'Frequently asked questions',
+    href: '/faq',
+  },
+  {
+    id: 'privacy',
+    label: 'Privacy',
+    description: 'Privacy information',
+    href: '/privacy',
+  },
 ];
 
 function clinicCommand(provider: Provider): Command {
@@ -38,7 +83,12 @@ function clinicCommand(provider: Provider): Command {
 
 function matches(command: Command, query: string): boolean {
   const value = query.trim().toLocaleLowerCase();
-  return !value || `${command.label} ${command.description}`.toLocaleLowerCase().includes(value);
+  return (
+    !value ||
+    `${command.label} ${command.description}`
+      .toLocaleLowerCase()
+      .includes(value)
+  );
 }
 
 export function CommandPalette() {
@@ -56,7 +106,15 @@ export function CommandPalette() {
   const { commands, voucherCommand } = useMemo(() => {
     const term = query.trim();
     const pageCommands = isAdmin
-      ? [...PAGES, { id: 'admin', label: 'Admin', description: 'Administration', href: '/admin' }]
+      ? [
+          ...PAGES,
+          {
+            id: 'admin',
+            label: 'Admin',
+            description: 'Administration',
+            href: '/admin',
+          },
+        ]
       : PAGES;
     const pages = pageCommands.filter((command) => matches(command, term));
     const clinics = term
@@ -116,10 +174,14 @@ export function CommandPalette() {
   function onInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === 'ArrowDown') {
       event.preventDefault();
-      setActiveIndex((index) => (results.length ? (index + 1) % results.length : 0));
+      setActiveIndex((index) =>
+        results.length ? (index + 1) % results.length : 0,
+      );
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
-      setActiveIndex((index) => (results.length ? (index - 1 + results.length) % results.length : 0));
+      setActiveIndex((index) =>
+        results.length ? (index - 1 + results.length) % results.length : 0,
+      );
     } else if (event.key === 'Enter' && results[activeIndex]) {
       event.preventDefault();
       navigate(results[activeIndex]);
@@ -138,7 +200,9 @@ export function CommandPalette() {
         aria-autocomplete="list"
         aria-expanded="true"
         aria-controls="command-results"
-        aria-activedescendant={results[activeIndex] ? `command-option-${activeIndex}` : undefined}
+        aria-activedescendant={
+          results[activeIndex] ? `command-option-${activeIndex}` : undefined
+        }
         value={query}
         onChange={(event) => {
           setQuery(event.target.value);
@@ -169,12 +233,18 @@ export function CommandPalette() {
                 : 'text-[var(--color-ink-soft)]'
             }`}
           >
-            <span className="font-medium text-[var(--color-ink)]">{command.label}</span>
+            <span className="font-medium text-[var(--color-ink)]">
+              {command.label}
+            </span>
             <span className="text-xs">{command.description}</span>
           </li>
         ))}
         {results.length === 0 && (
-          <li role="option" aria-selected="false" className="px-3 py-4 text-sm text-[var(--color-ink-soft)]">
+          <li
+            role="option"
+            aria-selected="false"
+            className="px-3 py-4 text-sm text-[var(--color-ink-soft)]"
+          >
             No matching destinations
           </li>
         )}

@@ -73,7 +73,9 @@ export function DemoTour() {
       <Card className="p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="max-w-xl">
-            <h2 className="text-sm font-semibold">New here? Take the demo tour</h2>
+            <h2 className="text-sm font-semibold">
+              New here? Take the demo tour
+            </h2>
             <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
               {isTestnet
                 ? 'Three steps through the whole product: get test USDC, fund a voucher, then follow it to the receipt.'
@@ -130,7 +132,7 @@ export function DemoTour() {
           >
             {step.cta}{' '}
             {/* Points onwards, so it follows the reading direction (#131). */}
-            <span aria-hidden className="inline-block rtl-flip">
+            <span aria-hidden className="rtl-flip inline-block">
               →
             </span>
           </Link>

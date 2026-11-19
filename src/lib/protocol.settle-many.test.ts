@@ -40,7 +40,11 @@ vi.mock('./contracts', () => {
       },
     };
   }
-  return { VoucherClient: FakeClient, RegistryClient: FakeClient, FaucetClient: FakeClient };
+  return {
+    VoucherClient: FakeClient,
+    RegistryClient: FakeClient,
+    FaucetClient: FakeClient,
+  };
 });
 
 vi.mock('./stellar', () => ({
@@ -87,8 +91,11 @@ beforeEach(() => {
 describe('settleMany', () => {
   it('settles one voucher per write when the contract has no batch method', async () => {
     const progress: Array<[number, number, string]> = [];
-    const result = await voucher.settleMany(CALLER, ['11', '12'], sign, (done, total, id) =>
-      progress.push([done, total, id]),
+    const result = await voucher.settleMany(
+      CALLER,
+      ['11', '12'],
+      sign,
+      (done, total, id) => progress.push([done, total, id]),
     );
 
     expect(state.invokes).toEqual(['settle', 'settle']);
@@ -147,8 +154,11 @@ describe('settleMany', () => {
     state.failNth = { method: 'settle', nth: 2 };
     const progress: string[] = [];
 
-    const result = await voucher.settleMany(CALLER, ['61', '62', '63'], sign, (_d, _t, id) =>
-      progress.push(id),
+    const result = await voucher.settleMany(
+      CALLER,
+      ['61', '62', '63'],
+      sign,
+      (_d, _t, id) => progress.push(id),
     );
 
     expect(state.invokes).toEqual(['settle', 'settle', 'settle']);

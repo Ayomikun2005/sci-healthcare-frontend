@@ -16,7 +16,10 @@ export function toBaseUnits(display: string): bigint {
   return BigInt(whole) * SCALE + BigInt(padded || '0');
 }
 
-export function validateAmountInput(display: string, minimum: bigint): string | null {
+export function validateAmountInput(
+  display: string,
+  minimum: bigint,
+): string | null {
   const trimmed = display.trim();
   if (!/^\d+(\.\d+)?$/.test(trimmed)) return 'Enter a valid amount.';
 
@@ -38,7 +41,8 @@ export function formatUsdc(base: string | bigint, locale = 'en'): string {
   const whole = value / SCALE;
   const frac = (value % SCALE).toString().padStart(DECIMALS, '0');
   const trimmed = frac.replace(/0+$/, '').padEnd(2, '0');
-  const localeTag = locale === 'fr' ? 'fr-FR' : locale === 'sw' ? 'sw-KE' : 'en-US';
+  const localeTag =
+    locale === 'fr' ? 'fr-FR' : locale === 'sw' ? 'sw-KE' : 'en-US';
   return `${whole.toLocaleString(localeTag)}.${trimmed}`;
 }
 
@@ -80,7 +84,8 @@ export function shortAddress(addr: string, chars = 4): string {
 export function formatDate(iso: string | Date | null, locale = 'en'): string {
   if (!iso) return '—';
   const d = typeof iso === 'string' ? new Date(iso) : iso;
-  const localeTag = locale === 'fr' ? 'fr-FR' : locale === 'sw' ? 'sw-KE' : 'en-GB';
+  const localeTag =
+    locale === 'fr' ? 'fr-FR' : locale === 'sw' ? 'sw-KE' : 'en-GB';
   return d.toLocaleDateString(localeTag, {
     day: 'numeric',
     month: 'short',
@@ -88,7 +93,10 @@ export function formatDate(iso: string | Date | null, locale = 'en'): string {
   });
 }
 
-export function timeUntil(iso: string | Date | null, now?: number | Date | null): string {
+export function timeUntil(
+  iso: string | Date | null,
+  now?: number | Date | null,
+): string {
   if (!iso) return '—';
   const d = typeof iso === 'string' ? new Date(iso) : iso;
   const currentMs =
@@ -110,7 +118,10 @@ export function timeUntil(iso: string | Date | null, now?: number | Date | null)
  * Formats elapsed time since a timestamp (e.g., "2h ago", "3d ago").
  * Returns 'just now' for times less than a minute.
  */
-export function timeSince(iso: string | Date | null, now?: number | Date | null): string {
+export function timeSince(
+  iso: string | Date | null,
+  now?: number | Date | null,
+): string {
   if (!iso) return '—';
   const d = typeof iso === 'string' ? new Date(iso) : iso;
   const currentMs =

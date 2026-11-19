@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: npm
-    directory: "/"
+    directory: '/'
     schedule:
       interval: weekly
       day: wednesday
@@ -11,16 +11,16 @@ updates:
     groups:
       npm-minor-and-patch:
         patterns:
-          - "*"
+          - '*'
         exclude-patterns:
           - next
-          - "@stellar/stellar-sdk"
+          - '@stellar/stellar-sdk'
         update-types:
           - minor
           - patch
 
   - package-ecosystem: github-actions
-    directory: "/"
+    directory: '/'
     schedule:
       interval: weekly
       day: wednesday
@@ -30,7 +30,7 @@ updates:
     groups:
       github-actions-minor-and-patch:
         patterns:
-          - "*"
+          - '*'
         update-types:
           - minor
           - patch

@@ -57,11 +57,16 @@ export function isAnalyticsConfigured(): boolean {
   return config.plausibleDomain.length > 0;
 }
 
-type PlausibleFn = (event: string, opts?: { u?: string; props?: Record<string, string | number> }) => void;
+type PlausibleFn = (
+  event: string,
+  opts?: { u?: string; props?: Record<string, string | number> },
+) => void;
 
 type AnalyticsWindow = {
   plausible?: PlausibleFn;
-  __sciAnalyticsQueue?: Array<[string, { u?: string; props?: Record<string, string | number> }?]>;
+  __sciAnalyticsQueue?: Array<
+    [string, { u?: string; props?: Record<string, string | number> }?]
+  >;
 };
 
 type SendOptions = { u?: string; props?: Record<string, string | number> };
@@ -119,7 +124,9 @@ export function trackMetric(name: string, value: number): void {
 
 /** A route change. Sends origin + normalized path, never the real URL. */
 export function trackPageview(pathname: string): void {
-  send('pageview', { u: `${window.location.origin}${normalizePath(pathname)}` });
+  send('pageview', {
+    u: `${window.location.origin}${normalizePath(pathname)}`,
+  });
 }
 
 /**
@@ -143,10 +150,16 @@ export function reportWebVitals(): void {
     trackMetric(name, Math.round(value));
   };
 
-  type LayoutShiftEntry = PerformanceEntry & { value?: number; hadRecentInput?: boolean };
+  type LayoutShiftEntry = PerformanceEntry & {
+    value?: number;
+    hadRecentInput?: boolean;
+  };
   type EventTimingEntry = PerformanceEntry & { interactionId?: number };
 
-  const observe = (type: string, cb: (entry: PerformanceEntry) => void): void => {
+  const observe = (
+    type: string,
+    cb: (entry: PerformanceEntry) => void,
+  ): void => {
     try {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) cb(entry);

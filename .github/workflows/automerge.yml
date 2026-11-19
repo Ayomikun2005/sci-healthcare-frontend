@@ -14,7 +14,16 @@ on:
   pull_request_target:
     # opened/synchronize: approve the CI run GitHub holds for first-time
     # contributors. edited: re-check as soon as a contributor links an issue.
-    types: [opened, synchronize, reopened, edited, labeled, unlabeled, ready_for_review]
+    types:
+      [
+        opened,
+        synchronize,
+        reopened,
+        edited,
+        labeled,
+        unlabeled,
+        ready_for_review,
+      ]
   schedule:
     # Backstop only: GitHub drops many scheduled runs under load.
     - cron: '*/10 * * * *'

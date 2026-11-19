@@ -61,7 +61,18 @@ describe('toBaseUnits', () => {
   });
 
   it('rejects anything that is not a plain decimal number', () => {
-    for (const bad of ['', ' ', 'abc', '1.2.3', '1.', '.5', '-1', '1,000', '1e7', '+1']) {
+    for (const bad of [
+      '',
+      ' ',
+      'abc',
+      '1.2.3',
+      '1.',
+      '.5',
+      '-1',
+      '1,000',
+      '1e7',
+      '+1',
+    ]) {
       expect(() => toBaseUnits(bad), bad).toThrow(/Not a valid amount/);
     }
   });
@@ -74,7 +85,9 @@ describe('validateAmountInput', () => {
   });
 
   it('rejects malformed values and precision beyond seven decimals', () => {
-    expect(validateAmountInput('not a number', 1n)).toBe('Enter a valid amount.');
+    expect(validateAmountInput('not a number', 1n)).toBe(
+      'Enter a valid amount.',
+    );
     expect(validateAmountInput('1.00000000', 1n)).toBe(
       'Use no more than 7 decimal places.',
     );
@@ -146,9 +159,12 @@ describe('shortAddress', () => {
   });
 
   it('honours a custom character count', () => {
-    expect(shortAddress('GCATS5YOVB6ROX2WUNKGNQ2MP3GMXDMKSG2O4N5CLX3A6W4PZGZZI55U', 6)).toBe(
-      'GCATS5…ZZI55U',
-    );
+    expect(
+      shortAddress(
+        'GCATS5YOVB6ROX2WUNKGNQ2MP3GMXDMKSG2O4N5CLX3A6W4PZGZZI55U',
+        6,
+      ),
+    ).toBe('GCATS5…ZZI55U');
   });
 });
 
@@ -222,7 +238,9 @@ describe('timeSince', () => {
   });
 
   it('accepts a Date as the reference point', () => {
-    expect(timeSince('2026-05-20T09:30:00.000Z', new Date(now))).toBe('30m ago');
+    expect(timeSince('2026-05-20T09:30:00.000Z', new Date(now))).toBe(
+      '30m ago',
+    );
   });
 
   afterEach(() => {

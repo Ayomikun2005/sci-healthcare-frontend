@@ -5,7 +5,11 @@ import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'react';
 import type { Map as LeafletMap } from 'leaflet';
 
-import { providerLocation, type Provider, type ProviderLocation } from '@/lib/api';
+import {
+  providerLocation,
+  type Provider,
+  type ProviderLocation,
+} from '@/lib/api';
 
 /**
  * Map of clinics that have published coordinates.
@@ -55,7 +59,9 @@ export function ClinicMap({ providers }: { providers: Provider[] }) {
 
       map = L.map(containerRef.current, { scrollWheelZoom: false });
       mapRef.current = map;
-      L.tileLayer(TILE_URL, { attribution: ATTRIBUTION, maxZoom: 19 }).addTo(map);
+      L.tileLayer(TILE_URL, { attribution: ATTRIBUTION, maxZoom: 19 }).addTo(
+        map,
+      );
 
       const located: Located[] = providers
         .map((provider) => ({ provider, location: providerLocation(provider) }))

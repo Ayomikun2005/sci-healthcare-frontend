@@ -13,18 +13,26 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('Landing section on home page (#53)', () => {
-  test('displays purpose, CTAs, three roles and trust points above the fold', async ({ page }, testInfo) => {
+  test('displays purpose, CTAs, three roles and trust points above the fold', async ({
+    page,
+  }, testInfo) => {
     await page.goto('/');
 
     // Purpose statement
-    await expect(page.getByRole('heading', { name: 'Pay for care, not for promises' })).toBeVisible();
     await expect(
-      page.getByText('Prepaid, purpose-bound healthcare vouchers that release funds'),
+      page.getByRole('heading', { name: 'Pay for care, not for promises' }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        'Prepaid, purpose-bound healthcare vouchers that release funds',
+      ),
     ).toBeVisible();
 
     // CTAs for funders and clinics
     const browseLink = page.getByRole('link', { name: 'Browse clinics ↓' });
-    const clinicDeskLink = page.getByRole('link', { name: 'Clinic desk' }).first();
+    const clinicDeskLink = page
+      .getByRole('link', { name: 'Clinic desk' })
+      .first();
     await expect(browseLink).toBeVisible();
     await expect(clinicDeskLink).toBeVisible();
 
@@ -34,7 +42,9 @@ test.describe('Landing section on home page (#53)', () => {
     await expect(page.getByText('Refunds (Protection)')).toBeVisible();
 
     // Verified clinics directory heading is visible
-    const directoryHeading = page.getByRole('heading', { name: 'Verified clinics' });
+    const directoryHeading = page.getByRole('heading', {
+      name: 'Verified clinics',
+    });
     await expect(directoryHeading).toBeVisible();
 
     // Acceptance criterion: Directory still visible above the fold on desktop
@@ -49,7 +59,9 @@ test.describe('Landing section on home page (#53)', () => {
 });
 
 test.describe('Testnet notice on first visit (#56)', () => {
-  test('shows notice on first visit and remembers dismissal', async ({ page }) => {
+  test('shows notice on first visit and remembers dismissal', async ({
+    page,
+  }) => {
     await page.goto('/');
 
     const notice = page.getByRole('complementary', { name: 'Testnet notice' });
@@ -63,12 +75,16 @@ test.describe('Testnet notice on first visit (#56)', () => {
 
     // Reload page; notice should remain dismissed
     await page.reload();
-    await expect(page.getByRole('complementary', { name: 'Testnet notice' })).not.toBeVisible();
+    await expect(
+      page.getByRole('complementary', { name: 'Testnet notice' }),
+    ).not.toBeVisible();
   });
 });
 
 test.describe('Privacy page (#55)', () => {
-  test('is linked from footer and explains on-chain, device, and API data', async ({ page }) => {
+  test('is linked from footer and explains on-chain, device, and API data', async ({
+    page,
+  }) => {
     await page.goto('/');
 
     // Check footer link
@@ -81,21 +97,37 @@ test.describe('Privacy page (#55)', () => {
     await expect(page).toHaveURL(/\/privacy$/);
 
     // Verify core sections
-    await expect(page.getByRole('heading', { name: 'Privacy Architecture' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /What is written on chain/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /What is never on chain/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /What stays on your device/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /What the API and indexer store/i })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Privacy Architecture' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /What is written on chain/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /What is never on chain/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /What stays on your device/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /What the API and indexer store/i }),
+    ).toBeVisible();
 
     // Check protocol doc link
-    const docLink = page.getByRole('link', { name: 'Protocol Privacy Specification' });
+    const docLink = page.getByRole('link', {
+      name: 'Protocol Privacy Specification',
+    });
     await expect(docLink).toBeVisible();
-    expect(await docLink.getAttribute('href')).toContain('docs/protocol/privacy.md');
+    expect(await docLink.getAttribute('href')).toContain(
+      'docs/protocol/privacy.md',
+    );
   });
 });
 
 test.describe('FAQ page (#54)', () => {
-  test('is linked from footer, contains at least 10 questions with accordion and doc links', async ({ page }) => {
+  test('is linked from footer, contains at least 10 questions with accordion and doc links', async ({
+    page,
+  }) => {
     await page.goto('/');
 
     // Check footer link
@@ -107,7 +139,9 @@ test.describe('FAQ page (#54)', () => {
     await faqLink.click();
     await expect(page).toHaveURL(/\/faq$/);
 
-    await expect(page.getByRole('heading', { name: 'Frequently Asked Questions' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Frequently Asked Questions' }),
+    ).toBeVisible();
 
     // Verify accordion items count (at least 10)
     const questions = page.locator('button[aria-controls^="faq-content-"]');
@@ -120,9 +154,12 @@ test.describe('FAQ page (#54)', () => {
     expect(contentId).toBeTruthy();
 
     if (contentId) {
-      const wasExpanded = (await firstQuestion.getAttribute('aria-expanded')) === 'true';
+      const wasExpanded =
+        (await firstQuestion.getAttribute('aria-expanded')) === 'true';
       await firstQuestion.click();
-      expect(await firstQuestion.getAttribute('aria-expanded')).toBe(wasExpanded ? 'false' : 'true');
+      expect(await firstQuestion.getAttribute('aria-expanded')).toBe(
+        wasExpanded ? 'false' : 'true',
+      );
     }
 
     // Expand all button
@@ -135,7 +172,9 @@ test.describe('FAQ page (#54)', () => {
 
     for (let i = 0; i < linksCount; i++) {
       const href = await sourceLinks.nth(i).getAttribute('href');
-      expect(href).toMatch(/github\.com\/Godgift-care\/sci-healthcare-contracts\/blob\/main\/docs\/protocol\//);
+      expect(href).toMatch(
+        /github\.com\/Godgift-care\/sci-healthcare-contracts\/blob\/main\/docs\/protocol\//,
+      );
     }
   });
 });
