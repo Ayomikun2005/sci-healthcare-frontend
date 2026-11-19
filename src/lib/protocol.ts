@@ -17,8 +17,6 @@ import {
   type SignFn,
 } from './stellar';
 
-export { RegistryClient, VoucherClient, FaucetClient } from './contracts';
-
 /**
  * Typed wrappers for every contract call the app makes.
  *

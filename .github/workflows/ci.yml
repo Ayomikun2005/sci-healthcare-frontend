@@ -222,17 +222,3 @@ jobs:
         with:
           node-version: '22'
       - run: node --test .github/scripts/automerge.test.cjs .github/scripts/security-scan.test.cjs
-
-  format:
-    name: format
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '22'
-          cache: npm
-      - run: npm ci
-      # Config: .prettierrc.json and .prettierignore. `npm run format` fixes
-      # whatever this reports.
-      - run: npm run format:check

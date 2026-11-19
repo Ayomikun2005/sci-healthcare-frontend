@@ -68,11 +68,6 @@ export const config = {
  */
 export const isTestnet = config.network !== 'public';
 
-export function requireContracts(): void {
-  required('NEXT_PUBLIC_VOUCHER_CONTRACT_ID', config.contracts.voucher);
-  required('NEXT_PUBLIC_REGISTRY_CONTRACT_ID', config.contracts.registry);
-}
-
 export function explorerTx(hash: string): string {
   return `https://stellar.expert/explorer/${config.network}/tx/${hash}`;
 }

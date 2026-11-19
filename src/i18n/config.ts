@@ -24,15 +24,3 @@ export const localeLabels: Record<Locale, string> = {
   fr: 'Français',
   sw: 'Kiswahili',
 };
-
-export const localeNumberFormats: Record<Locale, string> = {
-  en: 'en-US',
-  fr: 'fr-FR',
-  sw: 'sw-KE',
-};
-
-export const localeDateFormats: Record<Locale, string> = {
-  en: 'en-GB',
-  fr: 'fr-FR',
-  sw: 'sw-KE',
-};

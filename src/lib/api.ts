@@ -29,8 +29,6 @@ export {
   ApiError,
   providerLocation,
   type Attester,
-  type DailyBucket,
-  type DailyRow,
   type DailyStats,
   type ListProvidersParams,
   type ListVouchersParams,
