@@ -21,8 +21,6 @@ vendor/
 # Shell hooks, no Prettier parser (and they are not code this repo formats).
 .husky/
 
-# Workflow files are edited by hand. GitHub refuses any push that touches a
-# workflow file unless the pushing token has the `workflow` scope, so running
-# Prettier over them would make the repository harder to contribute to than the
-# formatting is worth; reviewers read them as YAML anyway.
-.github/workflows/
+# GitHub configuration and automation files are maintained separately and
+# should not be churned by automatic formatting.
+.github/

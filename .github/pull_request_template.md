@@ -1,5 +1,4 @@
 <!-- Link the issue this resolves. Wave contributors: one issue per PR. -->
-
 Closes #
 
 ## What changed

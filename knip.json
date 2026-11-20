@@ -1,5 +1,4 @@
 {
-  "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": [
     "src/app/**/{page,layout,route,template,loading,error,not-found,opengraph-image,icon}.{ts,tsx}",
     "scripts/*.mjs",

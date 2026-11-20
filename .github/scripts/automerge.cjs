@@ -70,9 +70,9 @@ async function withRateLimit({ fn, what }) {
         (headers['x-ratelimit-reset'] || headers['X-RateLimit-Reset']);
       throw new RateLimitError(
         `rate limited on ${what}, reset at ${new Date(
-          Number(reset) * 1000,
+          Number(reset) * 1000
         ).toISOString()}`,
-        reset ? Number(reset) * 1000 : null,
+        reset ? Number(reset) * 1000 : null
       );
     }
     throw err;
@@ -127,10 +127,7 @@ function approvedByWriter(reviews, headSha, writers) {
     latest.set(r.user.login, r);
   }
   return [...latest.values()].some(
-    (r) =>
-      r.state === 'APPROVED' &&
-      r.commit_id === headSha &&
-      writers.has(r.user.login),
+    (r) => r.state === 'APPROVED' && r.commit_id === headSha && writers.has(r.user.login),
   );
 }
 
@@ -140,89 +137,50 @@ function approvedByWriter(reviews, headSha, writers) {
  * Returns { action: 'merge' | 'wait' | 'comment' | 'skip', reason, detail? }.
  * 'comment' means: do not merge, and tell the author why (once per commit).
  */
-function evaluate({
-  pr,
-  ciRuns,
-  checkRuns,
-  files,
-  reviews,
-  writers,
-  patterns,
-  author,
-  linkedIssues = [],
-  security,
-}) {
+function evaluate({ pr, ciRuns, checkRuns, files, reviews, writers, patterns, author, linkedIssues = [], security }) {
   if (pr.state !== 'open') return { action: 'skip', reason: 'not-open' };
   if (pr.draft) return { action: 'skip', reason: 'draft' };
-  if (pr.labels.some((l) => l.name === 'do-not-merge'))
-    return { action: 'skip', reason: 'do-not-merge' };
+  if (pr.labels.some((l) => l.name === 'do-not-merge')) return { action: 'skip', reason: 'do-not-merge' };
 
   // The CI workflow must have run on this exact commit and passed.
   if (ciRuns.length === 0) return { action: 'wait', reason: 'ci-not-started' };
-  const latestCi = [...ciRuns].sort(
-    (a, b) => new Date(b.created_at) - new Date(a.created_at),
-  )[0];
-  if (latestCi.status !== 'completed')
-    return { action: 'wait', reason: 'ci-running' };
+  const latestCi = [...ciRuns].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+  if (latestCi.status !== 'completed') return { action: 'wait', reason: 'ci-running' };
   // First-time contributors: GitHub holds CI until a maintainer approves the run.
-  if (latestCi.conclusion === 'action_required')
-    return { action: 'skip', reason: 'ci-awaiting-approval' };
-  if (latestCi.conclusion !== 'success')
-    return { action: 'skip', reason: 'ci-failed' };
+  if (latestCi.conclusion === 'action_required') return { action: 'skip', reason: 'ci-awaiting-approval' };
+  if (latestCi.conclusion !== 'success') return { action: 'skip', reason: 'ci-failed' };
 
   // Every GitHub Actions check on the commit, not only CI, must be green.
   // The security job reports through its commit status, checked below.
-  const checks = latestByName(checkRuns).filter(
-    (c) => c.name !== BOT_JOB && c.name !== SECURITY_CONTEXT,
-  );
-  if (checks.some((c) => c.status !== 'completed'))
-    return { action: 'wait', reason: 'checks-running' };
+  const checks = latestByName(checkRuns).filter((c) => c.name !== BOT_JOB && c.name !== SECURITY_CONTEXT);
+  if (checks.some((c) => c.status !== 'completed')) return { action: 'wait', reason: 'checks-running' };
   const failed = checks.filter((c) => !PASSING.has(c.conclusion));
-  if (failed.length)
-    return {
-      action: 'skip',
-      reason: 'checks-failed',
-      detail: failed.map((c) => c.name),
-    };
+  if (failed.length) return { action: 'skip', reason: 'checks-failed', detail: failed.map((c) => c.name) };
 
   // The malware scan must have passed on this exact commit. Its findings are
   // explained on the pull request by the scan itself.
-  if (!security || security.state === 'pending')
-    return { action: 'wait', reason: 'security-scan-pending' };
-  if (security.state !== 'success')
-    return { action: 'skip', reason: 'security-scan-failed' };
+  if (!security || security.state === 'pending') return { action: 'wait', reason: 'security-scan-pending' };
+  if (security.state !== 'success') return { action: 'skip', reason: 'security-scan-failed' };
 
-  if (pr.mergeable === null)
-    return { action: 'wait', reason: 'mergeability-unknown' };
+  if (pr.mergeable === null) return { action: 'wait', reason: 'mergeability-unknown' };
   if (pr.mergeable === false || pr.mergeable_state === 'dirty') {
     return { action: 'comment', reason: 'conflicts' };
   }
-  if (pr.mergeable_state === 'behind')
-    return { action: 'comment', reason: 'behind' };
+  if (pr.mergeable_state === 'behind') return { action: 'comment', reason: 'behind' };
 
   // Contributors earn Drips points through the issue, so it must be linked
   // and assigned to them. Maintainers and bots are exempt.
   if (author && !author.isWriter && !author.isBot) {
-    if (linkedIssues.length === 0)
-      return { action: 'comment', reason: 'no-linked-issue' };
+    if (linkedIssues.length === 0) return { action: 'comment', reason: 'no-linked-issue' };
     const mine = linkedIssues.filter((i) => i.assignees.includes(author.login));
     if (mine.length === 0) {
-      return {
-        action: 'comment',
-        reason: 'issue-not-assigned',
-        detail: linkedIssues.map((i) => `#${i.number}`),
-      };
+      return { action: 'comment', reason: 'issue-not-assigned', detail: linkedIssues.map((i) => `#${i.number}`) };
     }
   }
 
   const touched = sensitiveFiles(files, patterns);
-  const reviewRequired = pr.labels.some(
-    (label) => label.name === 'review-required',
-  );
-  if (
-    (touched.length || reviewRequired) &&
-    !approvedByWriter(reviews, pr.head.sha, writers)
-  ) {
+  const reviewRequired = pr.labels.some((label) => label.name === 'review-required');
+  if ((touched.length || reviewRequired) && !approvedByWriter(reviews, pr.head.sha, writers)) {
     return {
       action: 'comment',
       reason: 'needs-approval',
@@ -230,10 +188,7 @@ function evaluate({
     };
   }
 
-  return {
-    action: 'merge',
-    reason: touched.length ? 'approved' : 'checks-passed',
-  };
+  return { action: 'merge', reason: touched.length ? 'approved' : 'checks-passed' };
 }
 
 /**
@@ -242,11 +197,7 @@ function evaluate({
  * it with 403 even though the pull request itself does not touch .github.
  */
 function isWorkflowPermissionError(err) {
-  return (
-    err &&
-    err.status === 403 &&
-    /not accessible by integration|workflow/i.test(err.message || '')
-  );
+  return err && err.status === 403 && /not accessible by integration|workflow/i.test(err.message || '');
 }
 
 const MESSAGES = {
@@ -264,9 +215,7 @@ const MESSAGES = {
     `All checks passed. This pull request changes files that control CI, deployment or dependencies, or is marked for review, so a maintainer must approve it before it is merged automatically:\n\n${files
       .slice(0, 20)
       .map((f) => `- \`${f}\``)
-      .join(
-        '\n',
-      )}${files.length > 20 ? `\n- …and ${files.length - 20} more` : ''}`,
+      .join('\n')}${files.length > 20 ? `\n- …and ${files.length - 20} more` : ''}`,
 };
 
 async function paginate(github, fn, params) {
@@ -280,11 +229,7 @@ async function paginate(github, fn, params) {
  */
 async function openPulls({ github, context }) {
   const { owner, repo } = context.repo;
-  return paginate(github, github.rest.pulls.list, {
-    owner,
-    repo,
-    state: 'open',
-  });
+  return paginate(github, github.rest.pulls.list, { owner, repo, state: 'open' });
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -313,34 +258,24 @@ async function approvePendingRuns({ github, context, core, pulls }) {
     const pending = await withRateLimit({
       fn: () =>
         paginate(github, github.rest.actions.listWorkflowRunsForRepo, {
-          owner,
-          repo,
-          status: 'action_required',
+          owner, repo, status: 'action_required',
         }),
       what: 'list workflow runs for approval',
     });
     for (const run of pending) {
       if (seen.has(run.id) || !shas.has(run.head_sha)) continue;
-      if (run.event !== 'pull_request' && run.event !== 'pull_request_target')
-        continue;
+      if (run.event !== 'pull_request' && run.event !== 'pull_request_target') continue;
       seen.add(run.id);
       try {
         await withRateLimit({
           fn: () =>
-            github.request(
-              'POST /repos/{owner}/{repo}/actions/runs/{run_id}/approve',
-              {
-                owner,
-                repo,
-                run_id: run.id,
-              },
-            ),
+            github.request('POST /repos/{owner}/{repo}/actions/runs/{run_id}/approve', {
+              owner, repo, run_id: run.id,
+            }),
           what: 'approve CI run',
         });
         approved++;
-        core.info(
-          `approved ${run.name} run ${run.id} for ${run.head_sha.slice(0, 7)}`,
-        );
+        core.info(`approved ${run.name} run ${run.id} for ${run.head_sha.slice(0, 7)}`);
       } catch (err) {
         core.warning(`could not approve run ${run.id}: ${err.message}`);
       }
@@ -349,23 +284,11 @@ async function approvePendingRuns({ github, context, core, pulls }) {
       const sha = context.payload.pull_request.head.sha;
       const runs = await withRateLimit({
         fn: () =>
-          github.rest.actions.listWorkflowRunsForRepo({
-            owner,
-            repo,
-            head_sha: sha,
-            per_page: 20,
-          }),
+          github.rest.actions.listWorkflowRunsForRepo({ owner, repo, head_sha: sha, per_page: 20 }),
         what: 'list workflow runs for head SHA',
       });
-      const ciExists = runs.data.workflow_runs.some((r) =>
-        r.path.endsWith('/ci.yml'),
-      );
-      const ciPending = runs.data.workflow_runs.some(
-        (r) =>
-          r.path.endsWith('/ci.yml') &&
-          r.conclusion === 'action_required' &&
-          !seen.has(r.id),
-      );
+      const ciExists = runs.data.workflow_runs.some((r) => r.path.endsWith('/ci.yml'));
+      const ciPending = runs.data.workflow_runs.some((r) => r.path.endsWith('/ci.yml') && r.conclusion === 'action_required' && !seen.has(r.id));
       if (ciExists && !ciPending) break;
       await sleep(10000);
     }
@@ -374,11 +297,7 @@ async function approvePendingRuns({ github, context, core, pulls }) {
 }
 
 async function alreadyCommented({ github, owner, repo, number, key }) {
-  const comments = await paginate(github, github.rest.issues.listComments, {
-    owner,
-    repo,
-    issue_number: number,
-  });
+  const comments = await paginate(github, github.rest.issues.listComments, { owner, repo, issue_number: number });
   return comments.some((c) => (c.body || '').includes(key));
 }
 
@@ -402,11 +321,7 @@ async function linkedIssuesOf({ github, owner, repo, number }) {
 
 async function permissionOf({ github, owner, repo, username }) {
   try {
-    const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
-      owner,
-      repo,
-      username,
-    });
+    const { data } = await github.rest.repos.getCollaboratorPermissionLevel({ owner, repo, username });
     return data.permission;
   } catch {
     return 'none';
@@ -432,123 +347,56 @@ async function handle({ github, context, core, pr, patterns }) {
   const { owner, repo } = context.repo;
   const checkPermission = permissionCache({ github, owner, repo });
   // Re-read: list results do not include mergeability.
-  let full = (
-    await github.rest.pulls.get({ owner, repo, pull_number: pr.number })
-  ).data;
+  let full = (await github.rest.pulls.get({ owner, repo, pull_number: pr.number })).data;
   // GitHub computes mergeability in the background, slowly after a busy
   // stretch of merges; wait up to ~15s before leaving it to the next run.
   for (let i = 0; i < 3 && full.mergeable === null; i++) {
     await new Promise((r) => setTimeout(r, 5000));
-    full = (
-      await github.rest.pulls.get({ owner, repo, pull_number: pr.number })
-    ).data;
+    full = (await github.rest.pulls.get({ owner, repo, pull_number: pr.number })).data;
   }
   const sha = full.head.sha;
 
-  const [
-    ciRuns,
-    checkRuns,
-    filesRaw,
-    reviews,
-    linkedIssues,
-    authorPerm,
-    security,
-  ] = await Promise.all([
+  const [ciRuns, checkRuns, filesRaw, reviews, linkedIssues, authorPerm, security] = await Promise.all([
     github.rest.actions
-      .listWorkflowRuns({
-        owner,
-        repo,
-        workflow_id: 'ci.yml',
-        head_sha: sha,
-        per_page: 20,
-      })
-      .then((r) =>
-        r.data.workflow_runs.filter((w) => w.event === 'pull_request'),
-      ),
-    paginate(github, github.rest.checks.listForRef, {
-      owner,
-      repo,
-      ref: sha,
-    }).then((runs) =>
+      .listWorkflowRuns({ owner, repo, workflow_id: 'ci.yml', head_sha: sha, per_page: 20 })
+      .then((r) => r.data.workflow_runs.filter((w) => w.event === 'pull_request')),
+    paginate(github, github.rest.checks.listForRef, { owner, repo, ref: sha }).then((runs) =>
       runs.filter((c) => c.app && c.app.slug === 'github-actions'),
     ),
-    paginate(github, github.rest.pulls.listFiles, {
-      owner,
-      repo,
-      pull_number: full.number,
-    }),
-    paginate(github, github.rest.pulls.listReviews, {
-      owner,
-      repo,
-      pull_number: full.number,
-    }),
+    paginate(github, github.rest.pulls.listFiles, { owner, repo, pull_number: full.number }),
+    paginate(github, github.rest.pulls.listReviews, { owner, repo, pull_number: full.number }),
     linkedIssuesOf({ github, owner, repo, number: full.number }),
     checkPermission(full.user.login),
     github.rest.repos
       .getCombinedStatusForRef({ owner, repo, ref: sha, per_page: 100 })
-      .then(
-        (r) =>
-          r.data.statuses.find((s) => s.context === SECURITY_CONTEXT) || null,
-      ),
+      .then((r) => r.data.statuses.find((s) => s.context === SECURITY_CONTEXT) || null),
   ]);
   const author = {
     login: full.user.login,
     isWriter: authorPerm === 'admin' || authorPerm === 'write',
     isBot: full.user.type === 'Bot',
   };
-  const files = filesRaw.flatMap((f) =>
-    [f.filename, f.previous_filename].filter(Boolean),
-  );
+  const files = filesRaw.flatMap((f) => [f.filename, f.previous_filename].filter(Boolean));
 
   const writers = new Set();
   const touched = sensitiveFiles(files, patterns);
-  const reviewRequired = pr.labels.some(
-    (label) => label.name === 'review-required',
-  );
+  const reviewRequired = pr.labels.some((label) => label.name === 'review-required');
   // Only check reviewer permissions when approval could matter.
-  if (
-    (touched.length || reviewRequired) &&
-    reviews.some((r) => r.state === 'APPROVED')
-  ) {
-    for (const login of new Set(
-      reviews.filter((r) => r.state === 'APPROVED').map((r) => r.user.login),
-    )) {
+  if ((touched.length || reviewRequired) && reviews.some((r) => r.state === 'APPROVED')) {
+    for (const login of new Set(reviews.filter((r) => r.state === 'APPROVED').map((r) => r.user.login))) {
       const perm = await checkPermission(login);
       if (perm === 'admin' || perm === 'write') writers.add(login);
     }
   }
 
-  const decision = evaluate({
-    pr: full,
-    ciRuns,
-    checkRuns,
-    files,
-    reviews,
-    writers,
-    patterns,
-    author,
-    linkedIssues,
-    security,
-  });
-  core.info(
-    `#${full.number} @ ${sha.slice(0, 7)}: ${decision.action} (${decision.reason})`,
-  );
+  const decision = evaluate({ pr: full, ciRuns, checkRuns, files, reviews, writers, patterns, author, linkedIssues, security });
+  core.info(`#${full.number} @ ${sha.slice(0, 7)}: ${decision.action} (${decision.reason})`);
 
   if (decision.action === 'comment') {
     const key = `${MARKER} ${decision.reason} ${sha} -->`;
-    if (
-      !(await alreadyCommented({
-        github,
-        owner,
-        repo,
-        number: full.number,
-        key,
-      }))
-    ) {
+    if (!(await alreadyCommented({ github, owner, repo, number: full.number, key }))) {
       await github.rest.issues.createComment({
-        owner,
-        repo,
-        issue_number: full.number,
+        owner, repo, issue_number: full.number,
         body: `${MESSAGES[decision.reason](decision.detail || [])}\n\n${key}`,
       });
     }
@@ -558,37 +406,20 @@ async function handle({ github, context, core, pr, patterns }) {
 
   try {
     await github.rest.pulls.merge({
-      owner,
-      repo,
-      pull_number: full.number,
-      sha,
-      merge_method: 'squash',
+      owner, repo, pull_number: full.number, sha, merge_method: 'squash',
       commit_title: `${full.title} (#${full.number})`,
     });
   } catch (err) {
     if (isWorkflowPermissionError(err)) {
       const key = `${MARKER} workflow-drift ${sha} -->`;
-      if (
-        !(await alreadyCommented({
-          github,
-          owner,
-          repo,
-          number: full.number,
-          key,
-        }))
-      ) {
+      if (!(await alreadyCommented({ github, owner, repo, number: full.number, key }))) {
         await github.rest.issues.createComment({
-          owner,
-          repo,
-          issue_number: full.number,
-          body: `${MESSAGES['workflow-drift']()}
+          owner, repo, issue_number: full.number, body: `${MESSAGES['workflow-drift']()}
 
 ${key}`,
         });
       }
-      core.info(
-        `#${full.number}: branch predates a workflow change on main; asked the author to update`,
-      );
+      core.info(`#${full.number}: branch predates a workflow change on main; asked the author to update`);
       return { action: 'comment', reason: 'workflow-drift' };
     }
     // Lost a race with a new push or another merge; the next event re-evaluates.
@@ -600,20 +431,10 @@ ${key}`,
   // and GitHub's closing keywords do not always fire for bot merges.
   const closed = [];
   for (const issue of linkedIssues) {
-    const { data } = await github.rest.issues.get({
-      owner,
-      repo,
-      issue_number: issue.number,
-    });
+    const { data } = await github.rest.issues.get({ owner, repo, issue_number: issue.number });
     if (data.state === 'open') {
       await github.rest.issues
-        .update({
-          owner,
-          repo,
-          issue_number: issue.number,
-          state: 'closed',
-          state_reason: 'completed',
-        })
+        .update({ owner, repo, issue_number: issue.number, state: 'closed', state_reason: 'completed' })
         .catch((e) => {
           // GitHub's own closing keywords often win the race; that is fine.
           if (!/closed by another request/i.test(e.message)) {
@@ -625,21 +446,13 @@ ${key}`,
   }
 
   await github.rest.issues.createComment({
-    owner,
-    repo,
-    issue_number: full.number,
+    owner, repo, issue_number: full.number,
     body: `Merged automatically: every CI check and the security scan passed on ${sha.slice(0, 7)}.${
       closed.length ? ` Closed ${closed.join(', ')} as completed.` : ''
     } Thank you for contributing!\n\n${MARKER} merged ${sha} -->`,
   });
-  if (
-    full.head.repo &&
-    full.head.repo.full_name === `${owner}/${repo}` &&
-    full.head.ref !== full.base.ref
-  ) {
-    await github.rest.git
-      .deleteRef({ owner, repo, ref: `heads/${full.head.ref}` })
-      .catch(() => {});
+  if (full.head.repo && full.head.repo.full_name === `${owner}/${repo}` && full.head.ref !== full.base.ref) {
+    await github.rest.git.deleteRef({ owner, repo, ref: `heads/${full.head.ref}` }).catch(() => {});
   }
   return decision;
 }
@@ -654,9 +467,7 @@ async function afterMerge({ github, context, core }) {
   if (process.env.REQUEST_PAGES_BUILD === 'true') {
     await github.rest.repos
       .requestPagesBuild({ owner, repo })
-      .catch((e) =>
-        core.warning(`could not request a Pages build: ${e.message}`),
-      );
+      .catch((e) => core.warning(`could not request a Pages build: ${e.message}`));
   }
 }
 
@@ -687,19 +498,11 @@ async function run({ github, context, core }) {
   // Early filter: skip drafts, do-not-merge, and closed PRs before any
   // per-PR API calls. These can be decided from the list response alone.
   const eligible = pulls.filter(
-    (pr) =>
-      pr.state === 'open' &&
-      !pr.draft &&
-      !pr.labels.some((l) => l.name === 'do-not-merge'),
+    (pr) => pr.state === 'open' && !pr.draft && !pr.labels.some((l) => l.name === 'do-not-merge'),
   );
   core.info(`${eligible.length} eligible pull request(s) after early filter`);
 
-  const approved = await approvePendingRuns({
-    github,
-    context,
-    core,
-    pulls: eligible,
-  });
+  const approved = await approvePendingRuns({ github, context, core, pulls: eligible });
   if (approved) core.info(`approved ${approved} pending CI run(s)`);
 
   let merged = 0;
