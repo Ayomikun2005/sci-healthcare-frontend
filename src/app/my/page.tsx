@@ -19,6 +19,7 @@ import {
   buildVoucherCsvRows,
   downloadCsv,
 } from '@/lib/csv';
+import { getStaffNotes } from '@/lib/staff-notes';
 import {
   invalidateVouchers,
   useLiveUpdates,
@@ -280,6 +281,7 @@ export default function MyPage() {
         selectedVouchers,
         providerMap,
         window.location.origin,
+        getStaffNotes(),
       ),
     );
   }
@@ -328,7 +330,12 @@ export default function MyPage() {
 
     downloadCsv(
       'funded-vouchers.csv',
-      buildVoucherCsvRows(all, providerMap, window.location.origin),
+      buildVoucherCsvRows(
+        all,
+        providerMap,
+        window.location.origin,
+        getStaffNotes(),
+      ),
     );
   }
 

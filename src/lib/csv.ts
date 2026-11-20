@@ -28,6 +28,7 @@ export function buildVoucherCsvRows(
   baseUrl = typeof window === 'undefined'
     ? 'http://localhost'
     : window.location.origin,
+  staffNotes?: Record<string, string>,
 ): Array<Array<string>> {
   const rows: Array<Array<string>> = [
     [
@@ -39,6 +40,7 @@ export function buildVoucherCsvRows(
       'funded',
       'settled or refunded date',
       'transaction link',
+      'staff note',
     ],
   ];
 
@@ -59,6 +61,7 @@ export function buildVoucherCsvRows(
           voucher.createdAt,
       ),
       new URL(`/vouchers/${voucher.id}`, baseUrl).toString(),
+      staffNotes?.[voucher.id] ?? '',
     ]);
   }
 
