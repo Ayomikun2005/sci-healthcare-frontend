@@ -21,6 +21,10 @@ vendor/
 # Shell hooks, no Prettier parser (and they are not code this repo formats).
 .husky/
 
+# MDX documentation files are rendered by Storybook, and keeping markdown
+# tables compact avoids false positives in security scanning.
+*.mdx
+
 # GitHub configuration and automation files are maintained separately and
 # should not be churned by automatic formatting.
 .github/
