@@ -25,6 +25,10 @@ vendor/
 # tables compact avoids false positives in security scanning.
 *.mdx
 
+# Avoid line-splitting URL patterns that trigger CodeQL regex/substring heuristics in test files.
+tests/e2e/low-bandwidth-mode.spec.ts
+tests/e2e/pages-and-notice.spec.ts
+
 # GitHub configuration and automation files are maintained separately and
 # should not be churned by automatic formatting.
 .github/

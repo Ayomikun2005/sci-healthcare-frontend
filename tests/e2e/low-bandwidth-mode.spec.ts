@@ -33,24 +33,20 @@ const ANALYTICS_BODY = Buffer.alloc(1024, 32);
 function recordApiRequests(page: Page): string[] {
   const urls: string[] = [];
   page.on('request', (request) => {
-    if (request.url().startsWith('http://localhost:8080'))
-      urls.push(request.url());
+    if (request.url().startsWith('http://localhost:8080')) urls.push(request.url());
   });
   return urls;
 }
 
 test.describe('the setting', () => {
-  test('is remembered per browser and takes the map out of the page', async ({
-    page,
-  }) => {
+  test('is remembered per browser and takes the map out of the page', async ({ page }) => {
     await useMockWallet(page, FUNDER);
     await mockBackend(page, { providers: [LOCATED_CLINIC] });
     await page.route('https://plausible.io/**', (route) => route.abort());
 
     const tiles: string[] = [];
     page.on('request', (request) => {
-      if (request.url().includes('tile.openstreetmap.org'))
-        tiles.push(request.url());
+      if (request.url().includes('tile.openstreetmap.org')) tiles.push(request.url());
     });
 
     await page.goto('/');
@@ -60,27 +56,23 @@ test.describe('the setting', () => {
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-pressed', 'true');
     expect(
-      await page.evaluate(
-        (key) => window.localStorage.getItem(key),
-        LOW_BANDWIDTH_KEY,
-      ),
+      await page.evaluate((key) => window.localStorage.getItem(key), LOW_BANDWIDTH_KEY),
     ).toBe('1');
 
     // The map view is offered but refused, with the reason inline: a button
     // that silently does nothing is worse than one that explains itself.
     await expect(page.getByRole('button', { name: 'Map' })).toBeDisabled();
-    await expect(
-      page.getByText(/map and its tiles are skipped/i),
-    ).toBeVisible();
+    await expect(page.getByText(/map and its tiles are skipped/i)).toBeVisible();
     await expect(page.getByRole('button', { name: 'List' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
 
     await page.reload();
-    await expect(
-      page.getByRole('button', { name: 'Low data mode' }),
-    ).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('button', { name: 'Low data mode' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
 
     // Nothing on this page ever asked OpenStreetMap for a tile.
     expect(tiles).toEqual([]);
@@ -92,8 +84,7 @@ test.describe('the setting', () => {
       const rect = el?.getBoundingClientRect();
       return {
         overflows: document.documentElement.scrollWidth > window.innerWidth,
-        visible:
-          Boolean(rect) && rect!.left >= 0 && rect!.right <= window.innerWidth,
+        visible: Boolean(rect) && rect!.left >= 0 && rect!.right <= window.innerWidth,
       };
     });
     expect(layout).toEqual({ overflows: false, visible: true });
@@ -118,12 +109,8 @@ test.describe('live updates', () => {
       .toBeGreaterThan(0);
   });
 
-  test('the mode polls on a long interval instead of streaming', async ({
-    page,
-  }) => {
-    await page.addInitScript(
-      `window.localStorage.setItem('${LOW_BANDWIDTH_KEY}', '1');`,
-    );
+  test('the mode polls on a long interval instead of streaming', async ({ page }) => {
+    await page.addInitScript(`window.localStorage.setItem('${LOW_BANDWIDTH_KEY}', '1');`);
     await useMockWallet(page, FUNDER);
     await mockBackend(page, { providers: [LOCATED_CLINIC] });
     await page.route('https://plausible.io/**', (route) => route.abort());
@@ -166,8 +153,7 @@ test.describe('page weight', () => {
     const analytics: string[] = [];
     page.on('request', (request) => {
       requests.push(request.url());
-      if (request.url().includes('tile.openstreetmap.org'))
-        tiles.push(request.url());
+      if (request.url().includes('tile.openstreetmap.org')) tiles.push(request.url());
       if (request.url().includes('plausible.io')) analytics.push(request.url());
     });
 
@@ -192,9 +178,7 @@ test.describe('page weight', () => {
     bytes = 0;
     await page.getByRole('button', { name: 'Map' }).click();
     await expect(
-      page.getByRole('img', {
-        name: /Map of 1 clinic with published locations/,
-      }),
+      page.getByRole('img', { name: /Map of 1 clinic with published locations/ }),
     ).toBeVisible();
     await page.waitForTimeout(2_000);
     const withMap = listOnly + bytes;
