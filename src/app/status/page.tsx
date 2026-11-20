@@ -52,7 +52,7 @@ function Check({
   if (ok === undefined)
     return <span className="text-[var(--color-ink-soft)]">Not reported</span>;
   return ok ? (
-    <span className="text-emerald-700">{okText}</span>
+    <span className="text-[var(--color-ok)]">{okText}</span>
   ) : (
     <span className="text-[var(--color-danger)]">{failText}</span>
   );

@@ -2,6 +2,7 @@ import {
   ApiError,
   createClient,
   type Attester,
+  type DailyRow,
   type DailyStats,
   type ListProvidersParams,
   type ListVouchersParams,
@@ -29,6 +30,7 @@ export {
   ApiError,
   providerLocation,
   type Attester,
+  type DailyRow,
   type DailyStats,
   type ListProvidersParams,
   type ListVouchersParams,
@@ -296,6 +298,34 @@ export const api = {
         `/vouchers/${encodeURIComponent(id)}/events`,
       ),
     ),
+
+  /**
+   * Total value the indexer currently reports as open in escrow (#295).
+   *
+   * Walks every open status so the statistics page can compare its own
+   * figure with the voucher contract's `escrow_summary`; the list route caps
+   * a page, so stopping at the first page would understate the total.
+   */
+  openEscrowTotal: async (): Promise<bigint> => {
+    const openStatuses = ['Funded', 'Claimed', 'Attested', 'Disputed'] as const;
+    const pageSize = 100;
+    let total = 0n;
+    for (const status of openStatuses) {
+      let offset = 0;
+      for (;;) {
+        const page = await client.vouchers({ status, limit: pageSize, offset });
+        for (const v of page.vouchers) total += BigInt(v.amount || '0');
+        offset += page.vouchers.length;
+        if (
+          page.vouchers.length < pageSize ||
+          (typeof page.total === 'number' && offset >= page.total)
+        ) {
+          break;
+        }
+      }
+    }
+    return total;
+  },
 
   receipts: (
     beneficiaryRef: string,

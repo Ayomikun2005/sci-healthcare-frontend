@@ -12,7 +12,7 @@ export default function HowItWorksPage() {
     <div className="space-y-12">
       {/* Header */}
       <div className="max-w-2xl space-y-2.5">
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-800 ring-1 ring-emerald-200 ring-inset">
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-line)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-ink-soft)] ring-1 ring-[var(--color-line)] ring-inset">
           Care-voucher protocol on Stellar
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-[var(--color-ink)] sm:text-3xl">
@@ -31,55 +31,65 @@ export default function HowItWorksPage() {
         <Card className="bg-gradient-to-b from-[var(--color-surface)] to-[var(--color-canvas)] p-4 sm:p-6">
           <div className="grid gap-3 text-center sm:grid-cols-5">
             {/* Step 1 */}
-            <div className="space-y-1.5 rounded-xl border border-[var(--color-line)] bg-white p-3.5">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-800">
+            <div className="space-y-1.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-3.5">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-brand-soft)] text-xs font-bold text-[var(--color-brand)]">
                 1
               </span>
-              <div className="text-sm font-semibold">Fund</div>
+              <div className="text-sm font-semibold text-[var(--color-ink)]">
+                Fund
+              </div>
               <p className="text-xs leading-normal text-[var(--color-ink-soft)]">
                 Funder commits USDC into smart contract escrow.
               </p>
             </div>
 
             {/* Step 2 */}
-            <div className="space-y-1.5 rounded-xl border border-[var(--color-line)] bg-white p-3.5">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-800">
+            <div className="space-y-1.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-3.5">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-brand-soft)] text-xs font-bold text-[var(--color-brand)]">
                 2
               </span>
-              <div className="text-sm font-semibold">Claim</div>
+              <div className="text-sm font-semibold text-[var(--color-ink)]">
+                Claim
+              </div>
               <p className="text-xs leading-normal text-[var(--color-ink-soft)]">
                 Clinic sees patient and logs medical care.
               </p>
             </div>
 
             {/* Step 3 */}
-            <div className="space-y-1.5 rounded-xl border border-[var(--color-line)] bg-white p-3.5">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-violet-100 text-xs font-bold text-violet-800">
+            <div className="space-y-1.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-3.5">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-brand-soft)] text-xs font-bold text-[var(--color-brand)]">
                 3
               </span>
-              <div className="text-sm font-semibold">Attest</div>
+              <div className="text-sm font-semibold text-[var(--color-ink)]">
+                Attest
+              </div>
               <p className="text-xs leading-normal text-[var(--color-ink-soft)]">
                 Third-party attester audits clinical proof.
               </p>
             </div>
 
             {/* Step 4 */}
-            <div className="space-y-1.5 rounded-xl border border-[var(--color-line)] bg-white p-3.5">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-800">
+            <div className="space-y-1.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-3.5">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-brand-soft)] text-xs font-bold text-[var(--color-brand)]">
                 4
               </span>
-              <div className="text-sm font-semibold">Dispute window</div>
+              <div className="text-sm font-semibold text-[var(--color-ink)]">
+                Dispute window
+              </div>
               <p className="text-xs leading-normal text-[var(--color-ink-soft)]">
                 Time window for funder to raise any dispute.
               </p>
             </div>
 
             {/* Step 5 */}
-            <div className="space-y-1.5 rounded-xl border border-[var(--color-line)] bg-white p-3.5">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800">
+            <div className="space-y-1.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-3.5">
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-[var(--color-brand-soft)] text-xs font-bold text-[var(--color-brand)]">
                 5
               </span>
-              <div className="text-sm font-semibold">Pay or Refund</div>
+              <div className="text-sm font-semibold text-[var(--color-ink)]">
+                Pay or Refund
+              </div>
               <p className="text-xs leading-normal text-[var(--color-ink-soft)]">
                 Clinic receives funds or 100% refunded to funder.
               </p>
@@ -96,10 +106,12 @@ export default function HowItWorksPage() {
           {/* Step 1 detail */}
           <Card className="space-y-3 border-s-4 border-s-blue-500 p-5">
             <div className="flex items-center gap-2">
-              <span className="grid h-6 w-6 place-items-center rounded bg-blue-100 text-xs font-bold text-blue-800">
+              <span className="grid h-6 w-6 place-items-center rounded bg-[var(--color-brand-soft)] text-xs font-bold text-[var(--color-brand)]">
                 1
               </span>
-              <h3 className="text-base font-semibold">Fund into Escrow</h3>
+              <h3 className="text-base font-semibold text-[var(--color-ink)]">
+                Fund into Escrow
+              </h3>
             </div>
             <p className="text-sm leading-relaxed text-[var(--color-ink-soft)]">
               A funder (grantmaker, donor, or patient sponsor) selects a
@@ -119,10 +131,10 @@ export default function HowItWorksPage() {
           {/* Step 2 detail */}
           <Card className="space-y-3 border-s-4 border-s-amber-500 p-5">
             <div className="flex items-center gap-2">
-              <span className="grid h-6 w-6 place-items-center rounded bg-amber-100 text-xs font-bold text-amber-800">
+              <span className="grid h-6 w-6 place-items-center rounded bg-[var(--color-brand-soft)] text-xs font-bold text-[var(--color-brand)]">
                 2
               </span>
-              <h3 className="text-base font-semibold">
+              <h3 className="text-base font-semibold text-[var(--color-ink)]">
                 Clinic Claims Attendance
               </h3>
             </div>
@@ -145,10 +157,10 @@ export default function HowItWorksPage() {
           {/* Step 3 detail */}
           <Card className="space-y-3 border-s-4 border-s-violet-500 p-5">
             <div className="flex items-center gap-2">
-              <span className="grid h-6 w-6 place-items-center rounded bg-violet-100 text-xs font-bold text-violet-800">
+              <span className="grid h-6 w-6 place-items-center rounded bg-[var(--color-brand-soft)] text-xs font-bold text-[var(--color-brand)]">
                 3
               </span>
-              <h3 className="text-base font-semibold">
+              <h3 className="text-base font-semibold text-[var(--color-ink)]">
                 Independent Attestation
               </h3>
             </div>
@@ -173,10 +185,10 @@ export default function HowItWorksPage() {
           {/* Step 4 detail */}
           <Card className="space-y-3 border-s-4 border-s-indigo-500 p-5">
             <div className="flex items-center gap-2">
-              <span className="grid h-6 w-6 place-items-center rounded bg-indigo-100 text-xs font-bold text-indigo-800">
+              <span className="grid h-6 w-6 place-items-center rounded bg-[var(--color-brand-soft)] text-xs font-bold text-[var(--color-brand)]">
                 4
               </span>
-              <h3 className="text-base font-semibold">
+              <h3 className="text-base font-semibold text-[var(--color-ink)]">
                 Time-Locked Dispute Window
               </h3>
             </div>
@@ -200,8 +212,8 @@ export default function HowItWorksPage() {
             5. Settlement: Pay or Refund
           </h3>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Card className="border-s-4 border-s-emerald-500 bg-emerald-50/30 p-5">
-              <div className="text-sm font-semibold text-emerald-900">
+            <Card className="border-s-4 border-s-emerald-500 bg-[var(--color-surface)] p-5">
+              <div className="text-sm font-semibold text-[var(--color-brand)]">
                 Outcome A: Care Paid
               </div>
               <p className="mt-2 text-xs leading-relaxed text-[var(--color-ink-soft)]">
@@ -212,8 +224,8 @@ export default function HowItWorksPage() {
               </p>
             </Card>
 
-            <Card className="border-s-4 border-s-blue-500 bg-blue-50/30 p-5">
-              <div className="text-sm font-semibold text-blue-900">
+            <Card className="border-s-4 border-s-blue-500 bg-[var(--color-surface)] p-5">
+              <div className="text-sm font-semibold text-[var(--color-brand)]">
                 Outcome B: 100% Refunded
               </div>
               <p className="mt-2 text-xs leading-relaxed text-[var(--color-ink-soft)]">
@@ -233,25 +245,25 @@ export default function HowItWorksPage() {
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/"
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--color-brand)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--color-brand)] px-4 py-2 text-sm font-medium text-[var(--color-brand-text)] transition hover:opacity-90"
           >
             Browse verified clinics
           </Link>
           <Link
             href="/attesters"
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--color-line)] bg-white px-4 py-2 text-sm font-medium text-[var(--color-ink)] transition hover:bg-[var(--color-canvas)]"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-ink)] transition hover:bg-[var(--color-canvas)]"
           >
             View attester directory
           </Link>
           <Link
             href="/stats"
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--color-line)] bg-white px-4 py-2 text-sm font-medium text-[var(--color-ink)] transition hover:bg-[var(--color-canvas)]"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-ink)] transition hover:bg-[var(--color-canvas)]"
           >
             Protocol statistics
           </Link>
           <Link
             href="/faq"
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--color-line)] bg-white px-4 py-2 text-sm font-medium text-[var(--color-ink)] transition hover:bg-[var(--color-canvas)]"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-2 text-sm font-medium text-[var(--color-ink)] transition hover:bg-[var(--color-canvas)]"
           >
             Read FAQ
           </Link>

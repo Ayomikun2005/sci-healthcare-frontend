@@ -74,7 +74,7 @@ test.describe('Batch refund on My vouchers (#45)', () => {
 
     // Verify completion summary alert
     await expect(
-      page.getByText(/Refunded 2 vouchers successfully/),
+      page.getByText(/Refunded 2 voucher\(s\) successfully/),
     ).toBeVisible();
 
     // Verify smart contract calls

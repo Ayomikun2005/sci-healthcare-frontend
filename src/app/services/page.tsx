@@ -83,13 +83,13 @@ export default function ServicesPage() {
         <div className="flex flex-wrap items-center gap-2.5 pt-0.5">
           <Link
             href="/"
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--color-line)] bg-white px-3.5 py-1.5 text-sm font-medium text-[var(--color-ink)] transition hover:bg-[var(--color-canvas)] max-sm:min-h-15"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-3.5 py-1.5 text-sm font-medium text-[var(--color-ink)] transition hover:bg-[var(--color-canvas)] max-sm:min-h-15"
           >
             Browse clinics →
           </Link>
           <Link
             href="/how-it-works"
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--color-line)] bg-white px-3.5 py-1.5 text-sm font-medium text-[var(--color-ink)] transition hover:bg-[var(--color-canvas)] max-sm:min-h-11"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] px-3.5 py-1.5 text-sm font-medium text-[var(--color-ink)] transition hover:bg-[var(--color-canvas)] max-sm:min-h-11"
           >
             How it works →
           </Link>
@@ -139,7 +139,7 @@ export default function ServicesPage() {
             action={
               <Link
                 href="/clinic"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--color-brand)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 max-sm:min-h-11"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[var(--color-brand)] px-4 py-2 text-sm font-medium text-[var(--color-brand-text)] transition hover:opacity-90 max-sm:min-h-11"
               >
                 List a service
               </Link>

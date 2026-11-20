@@ -93,13 +93,16 @@ describe('humaniseError', () => {
     );
   });
 
-  it('supports French and Swahili translations', () => {
+  it('supports French, Swahili and Yoruba translations', () => {
     expect(
       humaniseError(new Error('Error(Contract, #4)'), VOUCHER_ERRORS, 'fr'),
     ).toBe("Ce bon d'achat n'existe pas.");
     expect(
       humaniseError(new Error('Error(Contract, #4)'), VOUCHER_ERRORS, 'sw'),
     ).toBe('Vocha hiyo haipo.');
+    expect(
+      humaniseError(new Error('Error(Contract, #4)'), VOUCHER_ERRORS, 'yo'),
+    ).toBe('Vóṣà yẹn kò sí.');
     expect(
       humaniseError(new Error('token trustline missing'), VOUCHER_ERRORS, 'fr'),
     ).toBe(

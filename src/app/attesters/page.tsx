@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { useLocaleContext } from '@/i18n/LocaleContext';
 import { formatDate, shortAddress } from '@/lib/amounts';
 import { explorerAccount } from '@/lib/config';
 import { useAttesters } from '@/lib/hooks';
@@ -10,6 +11,7 @@ import { Alert, Card, Empty, ExplorerLink } from '@/components/ui';
 import { SkeletonRow } from '@/components/Skeleton';
 
 export default function AttestersPage() {
+  const { t } = useLocaleContext();
   const [includeInactive, setIncludeInactive] = useState(false);
 
   const { attesters, total, isLoading, error } = useAttesters({
@@ -111,7 +113,9 @@ export default function AttestersPage() {
                         <CopyValue
                           value={a.address}
                           buttonOnly
-                          label="attester address"
+                          label={t(
+                            'components.copyValue.labels.attesterAddress',
+                          )}
                         />
                       </span>
                     </td>

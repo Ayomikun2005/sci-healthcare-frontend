@@ -13,9 +13,10 @@
     "scripts/**/*.mjs"
   ],
   "ignoreIssues": {
-    "src/lib/contracts/generated/**": ["exports", "types"]
+    "src/lib/contracts/generated/**": ["exports", "types"],
+    "src/lib/stellar.ts": ["exports"]
   },
-  "ignoreDependencies": ["tailwindcss"],
+  "ignoreDependencies": ["tailwindcss", "@storybook/react"],
   "ignoreExportsUsedInFile": true,
   "includeEntryExports": false
 }

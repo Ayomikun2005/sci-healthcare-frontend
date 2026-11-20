@@ -31,6 +31,7 @@ import {
 import { useWallet } from '@/lib/wallet';
 import { ClinicChecklist } from '@/components/ClinicChecklist';
 import { QrScannerModal } from '@/components/QrScannerModal';
+import { OfflineClaimQueue } from '@/components/OfflineClaimQueue';
 import { RecentVouchers } from '@/components/RecentVouchers';
 import { VoucherRow } from '@/components/VoucherRow';
 import { useToast } from '@/components/Toast';
@@ -65,8 +66,8 @@ function StatusTab({
       onClick={onClick}
       className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition max-sm:min-h-11 ${
         active
-          ? 'border-transparent bg-[var(--color-brand)] text-white'
-          : 'border-[var(--color-line)] bg-white text-[var(--color-ink-soft)] hover:bg-[var(--color-canvas)] hover:text-[var(--color-ink)]'
+          ? 'border-transparent bg-[var(--color-brand)] text-[var(--color-brand-text)]'
+          : 'border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink-soft)] hover:bg-[var(--color-canvas)] hover:text-[var(--color-ink)]'
       }`}
     >
       <span>{children}</span>
@@ -352,6 +353,7 @@ export default function ClinicDeskPage() {
           />
         )}
       <RecentVouchers />
+      <OfflineClaimQueue />
 
       {standing !== null && standing !== 'Unregistered' && (
         <section aria-labelledby="clinic-earnings" className="space-y-5">
@@ -852,6 +854,7 @@ export default function ClinicDeskPage() {
                 {t('clinic.showingVouchers', {
                   shown: visibleVouchers.length,
                   total: vouchers.length,
+                  count: vouchers.length,
                 })}
               </span>
               {filtering && (

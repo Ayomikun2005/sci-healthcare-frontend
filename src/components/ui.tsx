@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
+import { useLocaleContext } from '@/i18n/LocaleContext';
 import type { VoucherStatus } from '@/lib/api';
 
 export function Card({
@@ -39,9 +40,9 @@ export function Button({
 }) {
   const styles = {
     primary:
-      'bg-[var(--color-brand)] text-white hover:opacity-90 disabled:opacity-40',
+      'bg-[var(--color-brand)] text-[var(--color-brand-text)] hover:opacity-90 disabled:opacity-40',
     ghost:
-      'border border-[var(--color-line)] bg-white text-[var(--color-ink)] hover:bg-[var(--color-canvas)] disabled:opacity-40',
+      'border border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink)] hover:bg-[var(--color-canvas)] hover:text-[var(--color-ink)] disabled:opacity-40',
     danger:
       'bg-[var(--color-danger)] text-white hover:opacity-90 disabled:opacity-40',
   }[variant];
@@ -107,7 +108,12 @@ export function Alert({
     success: 'border-emerald-200 bg-emerald-50 text-emerald-800',
   }[kind];
   return (
-    <div className={`rounded-lg border px-4 py-3 text-sm ${styles}`}>
+    <div
+      // Failures interrupt (`alert`); information and confirmations wait for a
+      // pause (`status`), which is what a live region is for.
+      role={kind === 'error' ? 'alert' : 'status'}
+      className={`rounded-lg border px-4 py-3 text-sm ${styles}`}
+    >
       {children}
     </div>
   );
@@ -206,6 +212,7 @@ export function Modal({
   children: ReactNode;
   actions?: ReactNode;
 }) {
+  const { t } = useLocaleContext();
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<Element | null>(null);
@@ -280,7 +287,7 @@ export function Modal({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close dialog"
+            aria-label={t('components.ui.closeDialog')}
             className="rounded-md px-2 py-1 text-lg leading-none text-[var(--color-ink-soft)] hover:bg-[var(--color-canvas)] hover:text-[var(--color-ink)]"
           >
             ×
@@ -354,11 +361,12 @@ export function Tooltip({
 
 /** Small "?" affordance that pairs with {@link Tooltip} for inline hints. */
 export function InfoTip({ content }: { content: ReactNode }) {
+  const { t } = useLocaleContext();
   return (
     <Tooltip content={content}>
       <span
         tabIndex={0}
-        aria-label="More information"
+        aria-label={t('components.ui.moreInformation')}
         className="ms-1 inline-grid h-4 w-4 cursor-help place-items-center rounded-full border border-[var(--color-line)] bg-[var(--color-canvas)] text-[10px] leading-none text-[var(--color-ink-soft)]"
       >
         ?

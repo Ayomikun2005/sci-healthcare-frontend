@@ -1,15 +1,6 @@
 {
   "name": "sci-healthcare-frontend",
   "version": "0.2.0",
-  "lint-staged": {
-    "*.{ts,tsx,js,mjs,cjs}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,yml,yaml,css}": [
-      "prettier --write"
-    ]
-  },
   "private": true,
   "description": "Web app for the SCI Healthcare care-voucher protocol on Stellar",
   "license": "Apache-2.0",
@@ -22,9 +13,6 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "prepare": "node scripts/install-hooks.mjs",
     "test:unit": "vitest run",
     "analyze": "ANALYZE=true next build --webpack",
     "icons": "node scripts/generate-icons.mjs",
@@ -34,6 +22,10 @@
     "test:visual": "playwright test tests/visual",
     "test:visual:update": "playwright test tests/visual --update-snapshots",
     "test:e2e": "playwright test tests/e2e",
+    "test:unit:coverage": "vitest run --coverage",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "node scripts/install-hooks.mjs",
     "deadcode": "knip"
   },
   "dependencies": {
@@ -50,9 +42,11 @@
     "swr": "^2.5.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@lhci/cli": "^0.16.0",
     "@next/bundle-analyzer": "^16.4.5",
     "@playwright/test": "1.65.1",
+    "@storybook/addon-a11y": "^10.6.7",
     "@storybook/addon-docs": "^10.6.6",
     "@storybook/nextjs": "^10.6.6",
     "@tailwindcss/postcss": "4.3.5",
@@ -62,17 +56,28 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "@vitest/coverage-v8": "^5.1.0",
+    "axe-core": "^4.14.1",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.6",
-    "husky": "^9.1.7",
     "jsdom": "^30.1.3",
-    "knip": "^6.46.1",
-    "lint-staged": "^17.6.1",
-    "prettier": "^3.10.1",
-    "prettier-plugin-tailwindcss": "^0.8.1",
     "storybook": "^10.6.2",
     "tailwindcss": "4.3.5",
     "typescript": "5.7.3",
-    "vitest": "5.1.0"
+    "vitest": "5.1.0",
+    "husky": "^9.1.7",
+    "knip": "^6.46.1",
+    "lint-staged": "^17.6.1",
+    "prettier": "^3.10.1",
+    "prettier-plugin-tailwindcss": "^0.8.1"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,css}": [
+      "prettier --write"
+    ]
   }
 }
