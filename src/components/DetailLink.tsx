@@ -11,17 +11,8 @@ type Props = Omit<ComponentProps<typeof Link>, 'href' | 'prefetch'> & { detail: 
 /** Disable Next's automatic viewport prefetch: both page and API reads
  * must pass the low-data guard, even on the first render. */
 export function DetailLink({ detail, onMouseEnter, onFocus, ...props }: Props) {
-  let router: ReturnType<typeof useRouter> | null = null;
-  try {
-    router = useRouter();
-  } catch {
-    // Safe outside Next.js AppRouter (e.g. Storybook / test environment)
-  }
-  const warm = () => {
-    if (router) {
-      prefetchDetail(detail, (href) => router.prefetch(href));
-    }
-  };
+  const router = useRouter();
+  const warm = () => prefetchDetail(detail, (href) => router.prefetch(href));
   return (
     <Link
       {...props}
