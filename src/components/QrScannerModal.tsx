@@ -286,7 +286,7 @@ export function QrScannerModal({ open, onClose, onScan }: QrScannerModalProps) {
           )}
 
           {hasCamera === null && (
-            <div className="animate-pulse text-xs text-white/70">
+            <div className="animate-pulse text-xs text-white/70 motion-reduce:animate-none">
               {t('scanner.requestingCamera')}
             </div>
           )}

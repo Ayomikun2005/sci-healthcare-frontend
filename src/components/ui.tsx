@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom';
 
 import { useLocaleContext } from '@/i18n/LocaleContext';
 import type { VoucherStatus } from '@/lib/api';
+import { getStatusExplanationKey, type VoucherRole } from '@/lib/timeline';
 
 export function Card({
   children,
@@ -52,7 +53,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed max-sm:min-h-11 ${styles} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed motion-reduce:transition-none max-sm:min-h-11 ${styles} ${className}`}
     >
       {children}
     </button>
@@ -68,9 +69,19 @@ const STATUS_STYLES: Record<VoucherStatus, string> = {
   Refunded: 'bg-slate-100 text-slate-600 ring-slate-200',
 };
 
-export function StatusBadge({ status }: { status: VoucherStatus }) {
+export function StatusBadge({
+  status,
+  role = 'patient',
+}: {
+  status: VoucherStatus;
+  role?: VoucherRole;
+}) {
+  const { t } = useLocaleContext();
+  const explanation = t(getStatusExplanationKey(status, role));
+
   return (
     <span
+      title={explanation}
       className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${STATUS_STYLES[status]}`}
     >
       {status}
@@ -268,7 +279,7 @@ export function Modal({
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="fixed inset-0 bg-black/40"
+        className="fixed inset-0 bg-black/40 transition-opacity motion-reduce:transition-none"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -278,7 +289,7 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="relative w-full max-w-md rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-5 shadow-xl outline-none"
+        className="relative w-full max-w-md rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-5 shadow-xl outline-none motion-reduce:transition-none"
       >
         <div className="flex items-start justify-between gap-3">
           <h2 id={titleId} className="text-base font-semibold tracking-tight">
@@ -311,10 +322,12 @@ export function Modal({
 export function Tooltip({
   content,
   children,
+  ariaLabel,
   side = 'top',
 }: {
   content: ReactNode;
   children: ReactNode;
+  ariaLabel?: string;
   side?: 'top' | 'bottom';
 }) {
   const [visible, setVisible] = useState(false);
@@ -333,8 +346,9 @@ export function Tooltip({
 
   return (
     <span className="relative inline-flex items-center">
-      <span
-        className="inline-flex items-center"
+      <button
+        type="button"
+        aria-label={ariaLabel}
         aria-describedby={visible ? id : undefined}
         onMouseEnter={() => setVisible(true)}
         onMouseLeave={() => setVisible(false)}
@@ -343,9 +357,10 @@ export function Tooltip({
         onKeyDown={(e) => {
           if (e.key === 'Escape') setVisible(false);
         }}
+        className="inline-flex items-center border-0 bg-transparent p-0 text-inherit focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)]"
       >
         {children}
-      </span>
+      </button>
       {visible && (
         <span
           role="tooltip"
@@ -363,12 +378,8 @@ export function Tooltip({
 export function InfoTip({ content }: { content: ReactNode }) {
   const { t } = useLocaleContext();
   return (
-    <Tooltip content={content}>
-      <span
-        tabIndex={0}
-        aria-label={t('components.ui.moreInformation')}
-        className="ms-1 inline-grid h-4 w-4 cursor-help place-items-center rounded-full border border-[var(--color-line)] bg-[var(--color-canvas)] text-[10px] leading-none text-[var(--color-ink-soft)]"
-      >
+    <Tooltip content={content} ariaLabel={t('components.ui.moreInformation')}>
+      <span className="ms-1 inline-grid h-4 w-4 cursor-help place-items-center rounded-full border border-[var(--color-line)] bg-[var(--color-canvas)] text-[10px] leading-none text-[var(--color-ink-soft)]">
         ?
       </span>
     </Tooltip>

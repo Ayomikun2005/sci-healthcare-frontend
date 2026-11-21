@@ -41,11 +41,13 @@ import { useLocaleContext } from '@/i18n/LocaleContext';
 import { Button, Card, ExplorerLink, InfoTip, Modal, StatusBadge } from './ui';
 import { AddressName } from './AddressName';
 import { useToast } from './Toast';
+import { setTransactionStatus, useTransactionStatus } from '@/lib/pending-tx';
 import { VerifyPatient } from './VerifyPatient';
 import {
   availableActions,
   type VoucherAction as Action,
 } from '@/lib/voucher-actions';
+import type { RestoreFootprintSignContext } from '@/lib/stellar';
 
 /** Funnel step per contract write. Names only — never any properties. */
 const ACTION_EVENTS = {
@@ -113,6 +115,7 @@ export function VoucherRow({
   const now = nowProp ?? nowInternal;
   const { locale } = useLocaleContext();
   const toast = useToast();
+  const txStatus = useTransactionStatus();
   const [busy, setBusy] = useState<Action | null>(null);
   // After a write the chain has moved but the indexer lags (#9): while
   // polling, the row shows a pending state instead of the stale status.
@@ -147,18 +150,29 @@ export function VoucherRow({
   async function run(action: Action) {
     if (!address) return void connect();
     setBusy(action);
+    setTransactionStatus('signing');
     try {
+      const wrappedSign = async (
+        xdr: string,
+        context?: RestoreFootprintSignContext,
+      ) => {
+        setTransactionStatus('signing');
+        const signed = await signTransaction(xdr, context);
+        setTransactionStatus('submitting');
+        return signed;
+      };
       const fns: Record<
         Action,
         () => Promise<{ hash: string; queued?: boolean }>
       > = {
-        claim: () => protocol.claim(address, v.id, signTransaction),
-        attest: () => protocol.attest(address, v.id, signTransaction),
-        settle: () => protocol.settle(address, v.id, signTransaction),
-        refund: () => protocol.refund(address, v.id, signTransaction),
-        dispute: () => protocol.dispute(address, v.id, reason, signTransaction),
+        claim: () => protocol.claim(address, v.id, wrappedSign),
+        attest: () => protocol.attest(address, v.id, wrappedSign),
+        settle: () => protocol.settle(address, v.id, wrappedSign),
+        refund: () => protocol.refund(address, v.id, wrappedSign),
+        dispute: () => protocol.dispute(address, v.id, reason, wrappedSign),
       };
       const res = await fns[action]();
+      setTransactionStatus('confirming');
       setDisputing(false);
       setAttesting(false);
       // A claim made without a connection is signed and queued (#301). It
@@ -166,6 +180,7 @@ export function VoucherRow({
       // to catch up to; the queue on the desk reports it instead.
       if (res.queued) {
         setBusy(null);
+        setTransactionStatus('idle');
         onDone?.();
         toast.success(t('offlineQueue.queuedToast'));
         return;
@@ -208,6 +223,7 @@ export function VoucherRow({
       toast.error(humaniseError(err));
     } finally {
       if (mounted.current) setBusy(null);
+      setTransactionStatus('idle');
     }
   }
 
@@ -439,7 +455,11 @@ export function VoucherRow({
               }}
             >
               {busy === a
-                ? 'Confirming…'
+                ? txStatus === 'signing'
+                  ? t('common.signing')
+                  : txStatus === 'submitting'
+                    ? t('common.submitting')
+                    : t('common.confirming')
                 : reconciling === a
                   ? 'Updating…'
                   : LABELS[a]}
@@ -528,7 +548,13 @@ export function VoucherRow({
               disabled={disabled || busy !== null}
               onClick={() => void run('dispute')}
             >
-              {busy === 'dispute' ? 'Confirming…' : 'Open dispute'}
+              {busy === 'dispute'
+                ? txStatus === 'signing'
+                  ? t('common.signing')
+                  : txStatus === 'submitting'
+                    ? t('common.submitting')
+                    : t('common.confirming')
+                : 'Open dispute'}
             </Button>
             <Button
               variant="ghost"
@@ -580,7 +606,13 @@ export function VoucherRow({
               disabled={disabled || busy !== null}
               onClick={() => void run('attest')}
             >
-              {busy === 'attest' ? 'Confirming…' : 'Confirm'}
+              {busy === 'attest'
+                ? txStatus === 'signing'
+                  ? t('common.signing')
+                  : txStatus === 'submitting'
+                    ? t('common.submitting')
+                    : t('common.confirming')
+                : 'Confirm'}
             </Button>
             <Button
               variant="ghost"
