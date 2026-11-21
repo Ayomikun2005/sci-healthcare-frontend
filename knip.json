@@ -13,7 +13,8 @@
   ],
   "ignoreIssues": {
     "src/lib/contracts/generated/**": ["exports", "types"],
-    "src/lib/stellar.ts": ["exports"]
+    "src/lib/stellar.ts": ["exports"],
+    "src/lib/checkout-draft.ts": ["exports"]
   },
   "ignoreDependencies": ["tailwindcss", "@storybook/react"],
   "ignoreExportsUsedInFile": true,
