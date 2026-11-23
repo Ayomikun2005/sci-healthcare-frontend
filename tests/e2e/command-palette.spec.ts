@@ -1,7 +1,29 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 import { CLAIMED_VOUCHER, CLINIC } from './fixtures';
 import { mockBackend } from './helpers';
+
+/**
+ * Opens the palette from the keyboard.
+ *
+ * `page.goto` resolves when the document has loaded, which on a loaded CI box
+ * can be before React has hydrated and attached the shortcut listener; a press
+ * in that window is dropped and the dialog never opens (#414). Retrying the
+ * press until the dialog appears keeps the test honest — it still fails if the
+ * shortcut or the dialog is broken — without depending on hydration timing.
+ */
+async function openPalette(
+  page: Page,
+  key: 'Control+k' | 'Meta+k' = 'Control+k',
+) {
+  const dialog = page.getByRole('dialog', { name: 'Go to' });
+  await expect(async () => {
+    await page.keyboard.press(key);
+    await expect(dialog).toBeVisible({ timeout: 1_000 });
+  }).toPass({ timeout: 15_000 });
+  return dialog;
+}
 
 test.beforeEach(async ({ page }) => {
   await mockBackend(page, {
@@ -14,13 +36,11 @@ test('opens with the keyboard and navigates to a matching clinic', async ({
   page,
 }) => {
   await page.goto('/');
-  await page.keyboard.press('Control+k');
 
-  const dialog = page.getByRole('dialog', { name: 'Go to' });
+  await openPalette(page);
   const search = page.getByRole('combobox', {
     name: 'Search clinics, pages, or voucher number',
   });
-  await expect(dialog).toBeVisible();
   await expect(search).toBeFocused();
   await search.fill('Ikeja');
   await expect(
@@ -35,7 +55,7 @@ test('opens with the keyboard and navigates to a matching clinic', async ({
 
 test('opens a voucher by number and closes on Escape', async ({ page }) => {
   await page.goto('/');
-  await page.keyboard.press('Meta+k');
+  await openPalette(page, 'Meta+k');
 
   const search = page.getByRole('combobox', {
     name: 'Search clinics, pages, or voucher number',
@@ -56,7 +76,7 @@ test('does not show the admin destination without admin access', async ({
   page,
 }) => {
   await page.goto('/');
-  await page.keyboard.press('Control+k');
+  await openPalette(page);
   await page
     .getByRole('combobox', {
       name: 'Search clinics, pages, or voucher number',

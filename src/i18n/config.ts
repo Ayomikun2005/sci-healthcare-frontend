@@ -34,3 +34,10 @@ export const localeNumberFormats: Record<Locale, string> = {
   sw: 'sw-KE',
   yo: 'yo-NG',
 };
+
+export const localeDateFormats: Record<Locale, string> = {
+  en: 'en-GB',
+  fr: 'fr-FR',
+  sw: 'sw-KE',
+  yo: 'yo-NG',
+};
