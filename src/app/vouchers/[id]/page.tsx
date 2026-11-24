@@ -29,6 +29,7 @@ import {
 } from '@/lib/timeline';
 import { useWallet } from '@/lib/wallet';
 import { CopyValue } from '@/components/CopyValue';
+import { ShareReceiptButton } from '@/components/ShareReceiptButton';
 import { SkeletonDetail } from '@/components/Skeleton';
 import { VoucherQr } from '@/components/VoucherQr';
 import { VoucherRow } from '@/components/VoucherRow';
@@ -406,7 +407,26 @@ export default function VoucherPage({
           )}
           {v.receipt && (
             <Field label={t('voucher.careReceipt')}>
-              {t('voucher.minted')} {formatDate(v.receipt.settledAt, locale)}
+              <div className="flex flex-wrap items-center gap-2">
+                <span>
+                  {t('voucher.minted')}{' '}
+                  {formatDate(v.receipt.settledAt, locale)}
+                </span>
+                {/* Public receipt facts only; never the patient reference (#122). */}
+                <ShareReceiptButton
+                  className="print:hidden"
+                  receipt={{
+                    voucherId: v.id,
+                    service:
+                      v.receipt.serviceLabel ??
+                      v.serviceLabel ??
+                      `Service ${v.serviceCode}`,
+                    clinic: v.receipt.providerName ?? v.provider.name,
+                    amount: formatUsdc(v.receipt.amount, locale),
+                    settledOn: formatDate(v.receipt.settledAt, locale),
+                  }}
+                />
+              </div>
             </Field>
           )}
           <div className="space-y-4 print:hidden">

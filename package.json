@@ -80,5 +80,8 @@
     "*.{json,md,yml,yaml,css}": [
       "prettier --write"
     ]
+  },
+  "overrides": {
+    "undici": "8.5.0"
   }
 }
